@@ -1,0 +1,1024 @@
+<title>SGLang Source Field Guide</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+/* Layout: sticky chapter rail on the left, one reading column (~68ch) on the right; instruments (diagrams, simulators) break out to the full column width. */
+:root{
+  --paper:#F4F6F7; --surface:#FFFFFF; --ink:#13212B; --muted:#566874; --rule:#D6DEE3;
+  --accent:#0B7A72; --accent-soft:#DAEEEB; --hot:#A95606; --hot-soft:#FAEAD6;
+  --code-bg:#ECF1F3; --code-ink:#1C2E39; --comment:#6A7C87; --ok:#2D7A3A; --bad:#B23A3A;
+  --f-display:"IBM Plex Sans Condensed","Arial Narrow",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,"Cascadia Code",Consolas,monospace;
+  --s-1:.8125rem; --s0:1rem; --s1:1.1875rem; --s2:1.5rem; --s3:2.1rem; --s4:2.9rem;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#0E151A; --surface:#141F27; --ink:#E1E9ED; --muted:#91A3AF; --rule:#25343E;
+  --accent:#4DC0B3; --accent-soft:#123633; --hot:#E9A04B; --hot-soft:#3A2913;
+  --code-bg:#101A20; --code-ink:#D3DEE4; --comment:#7F929E; --ok:#6CC27A; --bad:#E07A7A; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#0E151A; --surface:#141F27; --ink:#E1E9ED; --muted:#91A3AF; --rule:#25343E;
+  --accent:#4DC0B3; --accent-soft:#123633; --hot:#E9A04B; --hot-soft:#3A2913;
+  --code-bg:#101A20; --code-ink:#D3DEE4; --comment:#7F929E; --ok:#6CC27A; --bad:#E07A7A; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:var(--s0);line-height:1.62;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 4rem}
+a{color:var(--accent);text-underline-offset:2px}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
+.shell{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:240px minmax(0,1fr);gap:3rem}
+/* rail */
+.rail{position:sticky;top:env(safe-area-inset-top,0px);align-self:start;max-height:100vh;overflow:auto;padding-block:2rem}
+.rail .brand{font-family:var(--f-display);font-weight:700;font-size:var(--s1);letter-spacing:.01em;line-height:1.2}
+.rail .pin{font-family:var(--f-mono);font-size:.72rem;color:var(--muted);margin-top:.35rem;word-break:break-all}
+.rail ol{list-style:none;padding:0;margin:1.5rem 0 0;display:grid;gap:.1rem}
+.rail a{display:flex;gap:.6rem;align-items:baseline;padding:.32rem .5rem;border-radius:4px;color:var(--ink);text-decoration:none;font-size:.92rem}
+.rail a .n{font-family:var(--f-mono);font-size:.72rem;color:var(--muted);min-width:1.4rem}
+.rail a:hover{background:var(--accent-soft)}
+.rail a.cur{background:var(--accent-soft);color:var(--accent);font-weight:600}
+.rail a .tick{margin-left:auto;color:var(--ok);font-size:.8rem;visibility:hidden}
+.rail a.read .tick{visibility:visible}
+.rail .legend{margin-top:1.5rem;font-size:var(--s-1);color:var(--muted);display:grid;gap:.4rem}
+.rail .legend span{display:inline-block;width:.7rem;height:.7rem;border-radius:2px;margin-right:.4rem;vertical-align:-1px}
+/* main */
+main{min-width:0;padding-block:2.5rem 0}
+.mast{border-bottom:1px solid var(--rule);padding-bottom:2rem;margin-bottom:1rem}
+.eyebrow{font-family:var(--f-mono);font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+h1{font-family:var(--f-display);font-weight:700;font-size:var(--s4);line-height:1.05;margin:.4rem 0 1rem;text-wrap:balance;letter-spacing:-.01em}
+h2{font-family:var(--f-display);font-weight:700;font-size:var(--s3);line-height:1.1;margin:0 0 .6rem;text-wrap:balance}
+h3{font-family:var(--f-display);font-weight:600;font-size:var(--s2);line-height:1.2;margin:2.2rem 0 .5rem;text-wrap:balance}
+h4{font-family:var(--f-body);font-weight:600;font-size:var(--s0);margin:1.4rem 0 .3rem}
+.lede{font-size:var(--s1);max-width:64ch;color:var(--ink)}
+p,ul,ol.steps{max-width:68ch}
+p{margin:.7rem 0}
+section.ch{padding-block:3rem 1rem;border-bottom:1px solid var(--rule);scroll-margin-top:1rem}
+.chhead{display:flex;gap:1rem;align-items:baseline;flex-wrap:wrap}
+.chnum{font-family:var(--f-mono);font-size:.85rem;color:var(--muted)}
+.why{font-size:var(--s1);color:var(--muted);max-width:64ch;margin-top:0}
+code,kbd{font-family:var(--f-mono);font-size:.86em;background:var(--code-bg);color:var(--code-ink);padding:.08em .32em;border-radius:3px}
+pre{font-family:var(--f-mono);font-size:.82rem;line-height:1.55;background:var(--code-bg);color:var(--code-ink);padding:1rem 1.1rem;border-radius:6px;overflow-x:auto;margin:.4rem 0 0;max-width:100%}
+pre code{background:none;padding:0;font-size:inherit}
+pre .c{color:var(--comment);font-style:italic}
+pre .k{color:var(--accent);font-weight:500}
+pre .h{background:var(--hot-soft);color:var(--hot)}
+figure.code{margin:1.2rem 0;max-width:100%}
+figure.code figcaption{display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;font-size:var(--s-1);color:var(--muted)}
+a.src{font-family:var(--f-mono);font-size:.8rem;white-space:nowrap}
+.note{border-left:3px solid var(--hot);background:var(--hot-soft);padding:.7rem 1rem;border-radius:0 6px 6px 0;max-width:68ch;margin:1.2rem 0}
+.note b{color:var(--hot)}
+.tbl{overflow-x:auto;margin:1rem 0;max-width:100%}
+table{border-collapse:collapse;font-size:.9rem;min-width:520px;width:100%}
+th,td{text-align:left;padding:.5rem .7rem;border-bottom:1px solid var(--rule);vertical-align:top}
+th{font-family:var(--f-display);font-weight:600;font-size:.85rem;letter-spacing:.03em;text-transform:uppercase;color:var(--muted)}
+td code{white-space:nowrap}
+/* instruments */
+.inst{background:var(--surface);border:1px solid var(--rule);border-radius:8px;padding:1.2rem;margin:1.6rem 0;max-width:100%}
+.inst-head{display:flex;justify-content:space-between;align-items:baseline;gap:1rem;flex-wrap:wrap;margin-bottom:.8rem}
+.inst-title{font-family:var(--f-display);font-weight:600;font-size:var(--s1)}
+.inst-tag{font-family:var(--f-mono);font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.diagram{overflow-x:auto;max-width:100%}
+.diagram svg{display:block;min-width:640px;width:100%;height:auto}
+svg text{font-family:var(--f-body);fill:var(--ink)}
+svg .t-mono{font-family:var(--f-mono)}
+svg .t-muted{fill:var(--muted)}
+svg .box{fill:var(--surface);stroke:var(--rule);stroke-width:1.5}
+svg .proc{fill:none;stroke:var(--muted);stroke-width:1;stroke-dasharray:4 4}
+svg .edge{stroke:var(--muted);stroke-width:1.5;fill:none}
+svg .arrowhead{fill:var(--muted)}
+svg .on .box,svg .box.on{fill:var(--accent-soft);stroke:var(--accent);stroke-width:2.2}
+svg .edge.on{stroke:var(--accent);stroke-width:2.6}
+svg .hotbox{fill:var(--hot-soft);stroke:var(--hot);stroke-width:1.5}
+.stepper{display:grid;gap:.8rem}
+.stepctl{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap}
+button,.btn{font-family:var(--f-body);font-size:.88rem;font-weight:500;background:var(--surface);color:var(--ink);border:1px solid var(--rule);border-radius:5px;padding:.42rem .8rem;cursor:pointer}
+button:hover{border-color:var(--accent);color:var(--accent)}
+button.primary{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+button.primary:hover{filter:brightness(1.08);color:var(--surface)}
+button:disabled{opacity:.45;cursor:default}
+.dots{display:flex;gap:.3rem;flex-wrap:wrap}
+.dots button{width:2rem;padding:.3rem 0;font-family:var(--f-mono);font-size:.75rem}
+.dots button.cur{background:var(--accent);color:var(--surface);border-color:var(--accent)}
+.stepbody{border-top:1px solid var(--rule);padding-top:.8rem;min-height:7.5rem}
+.stepbody h4{margin:0 0 .3rem;font-family:var(--f-display);font-size:var(--s1)}
+.stepbody p{margin:.3rem 0}
+.where{font-size:var(--s-1);color:var(--muted);margin-top:.4rem}
+details.check{max-width:68ch;margin:1.4rem 0;border:1px solid var(--rule);border-radius:6px;background:var(--surface)}
+details.check summary{cursor:pointer;padding:.65rem 1rem;font-weight:600;font-size:.92rem;list-style:none}
+details.check summary::before{content:"?";display:inline-grid;place-items:center;width:1.3rem;height:1.3rem;border-radius:50%;background:var(--accent-soft);color:var(--accent);font-family:var(--f-mono);font-size:.75rem;margin-right:.6rem}
+details.check[open] summary{border-bottom:1px solid var(--rule)}
+details.check .a{padding:.2rem 1rem .8rem}
+.mark{display:flex;gap:.5rem;align-items:center;font-size:var(--s-1);color:var(--muted);margin-top:1.5rem}
+.mark input{accent-color:var(--accent);width:1rem;height:1rem}
+/* radix sim */
+.sim-grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:1.2rem}
+.sim-in{display:grid;gap:.5rem}
+.sim-in label{font-size:var(--s-1);color:var(--muted)}
+.sim-in input[type=text]{width:100%;font-family:var(--f-mono);font-size:.85rem;padding:.5rem .6rem;border:1px solid var(--rule);border-radius:5px;background:var(--paper);color:var(--ink)}
+.presets{display:flex;gap:.35rem;flex-wrap:wrap}
+.presets button{font-size:.78rem;padding:.3rem .55rem}
+.meter{height:.7rem;border-radius:4px;background:var(--code-bg);overflow:hidden;display:flex}
+.meter i{display:block;height:100%}
+.meter .m-prot{background:var(--hot)}
+.meter .m-evict{background:var(--accent)}
+.meter .m-priv{background:var(--muted)}
+.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.3rem 1rem;font-size:var(--s-1);font-variant-numeric:tabular-nums}
+.stats b{font-family:var(--f-mono);font-weight:500}
+.tree{font-family:var(--f-mono);font-size:.78rem;overflow-x:auto;background:var(--paper);border:1px solid var(--rule);border-radius:6px;padding:.8rem;min-height:12rem}
+.tree ul{list-style:none;margin:0;padding-left:1.1rem;border-left:1px dashed var(--rule)}
+.tree > ul{border-left:none;padding-left:0}
+.tree li{margin:.3rem 0}
+.node{display:inline-flex;gap:.45rem;align-items:baseline;padding:.15rem .45rem;border:1px solid var(--rule);border-radius:4px;background:var(--surface);white-space:nowrap}
+.node .len{color:var(--muted)}
+.node.hit{border-color:var(--accent);background:var(--accent-soft)}
+.node.new{border-color:var(--hot);background:var(--hot-soft)}
+.node.locked::after{content:"lock " attr(data-lock);font-size:.68rem;color:var(--hot)}
+.node.gone{opacity:.4;text-decoration:line-through}
+.log{font-family:var(--f-mono);font-size:.75rem;max-height:10rem;overflow:auto;background:var(--code-bg);border-radius:5px;padding:.5rem .7rem;line-height:1.5}
+.log div{border-bottom:1px solid var(--rule);padding:.15rem 0}
+.running{display:flex;flex-wrap:wrap;gap:.35rem}
+.chip{font-family:var(--f-mono);font-size:.72rem;padding:.15rem .5rem;border-radius:999px;border:1px solid var(--hot);color:var(--hot);background:var(--hot-soft)}
+/* entropy */
+.ent-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:1.4rem}
+.ctl{display:grid;gap:.9rem}
+.ctl label{display:grid;gap:.25rem;font-size:var(--s-1);color:var(--muted)}
+.ctl label span{display:flex;justify-content:space-between}
+.ctl label b{font-family:var(--f-mono);color:var(--ink);font-weight:500}
+.ctl input[type=range]{width:100%;accent-color:var(--accent)}
+.bars{display:grid;gap:.28rem}
+.bar{display:grid;grid-template-columns:5.5rem minmax(0,1fr) 3.4rem;gap:.5rem;align-items:center;font-size:.8rem;font-variant-numeric:tabular-nums}
+.bar .tok{font-family:var(--f-mono);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar .track{height:.85rem;background:var(--code-bg);border-radius:3px;overflow:hidden}
+.bar .fill{height:100%;background:var(--accent);border-radius:3px}
+.bar.cut .fill{background:var(--rule)}
+.bar.cut .tok{color:var(--muted);text-decoration:line-through}
+.bar .pv{font-family:var(--f-mono);text-align:right;color:var(--muted)}
+.readout{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.6rem;margin-top:.9rem}
+.readout div{border:1px solid var(--rule);border-radius:6px;padding:.5rem .7rem;background:var(--paper)}
+.readout small{display:block;font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.readout b{font-family:var(--f-mono);font-size:1.05rem;font-weight:500;font-variant-numeric:tabular-nums}
+/* map grid */
+.dirs{display:grid;grid-template-columns:repeat(auto-fill,minmax(15rem,1fr));gap:.6rem;margin:1rem 0}
+.dir{border:1px solid var(--rule);border-radius:6px;padding:.7rem .85rem;background:var(--surface)}
+.dir code{background:none;padding:0;font-weight:500;color:var(--accent)}
+.dir p{margin:.25rem 0 0;font-size:.86rem;color:var(--muted)}
+.dir.focus{border-color:var(--hot)}
+.dir.focus code{color:var(--hot)}
+.kvex{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.8rem}
+.kvcol h5{font-family:var(--f-display);font-weight:600;font-size:.95rem;margin:0 0 .4rem}
+.kvcol .sub{font-size:.75rem;color:var(--muted);margin-bottom:.5rem;font-family:var(--f-mono)}
+.cells{display:grid;gap:3px;font-family:var(--f-mono);font-size:.72rem}
+.cells .row{display:flex;gap:3px;align-items:center}
+.cells .lab{width:3.6rem;color:var(--muted)}
+.cell{min-width:1.9rem;padding:.2rem .25rem;text-align:center;border-radius:3px;background:var(--code-bg)}
+.cell.a{background:var(--accent-soft);color:var(--accent);outline:1px solid var(--accent)}
+.cell.b{background:var(--hot-soft);color:var(--hot);outline:1px solid var(--hot)}
+.cell.s{background:linear-gradient(135deg,var(--accent-soft) 50%,var(--hot-soft) 50%);outline:1px solid var(--muted)}
+.foot{color:var(--muted);font-size:var(--s-1);margin-top:3rem;max-width:68ch}
+@media (max-width:900px){
+  .shell{grid-template-columns:minmax(0,1fr);gap:0}
+  .rail{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--paper);max-height:none;overflow:visible;padding-block:.6rem;border-bottom:1px solid var(--rule)}
+  .rail .brand,.rail .pin,.rail .legend{display:none}
+  .rail ol{margin:0;display:flex;overflow-x:auto;gap:.25rem;scrollbar-width:none}
+  .rail a{white-space:nowrap;font-size:.82rem;padding:.3rem .55rem}
+  .rail a .tick{display:none}
+  .sim-grid,.ent-grid{grid-template-columns:minmax(0,1fr)}
+  .kvex{grid-template-columns:minmax(0,1fr)}
+  h1{font-size:2.2rem}
+  h2{font-size:1.75rem}
+}
+@media (prefers-reduced-motion:no-preference){
+  .bar .fill,.meter i{transition:width .25s ease}
+  svg .box,svg .edge{transition:fill .2s,stroke .2s}
+}
+</style>
+
+<div class="shell">
+<nav class="rail" aria-label="Chapters">
+  <div class="brand">SGLang Source<br>Field Guide</div>
+  <div class="pin">pinned to main @ 3420bae<br>16 Oct 2026</div>
+  <ol id="toc">
+    <li><a href="#start"><span class="n">00</span>Start here<span class="tick">✓</span></a></li>
+    <li><a href="#map"><span class="n">01</span>Request journey<span class="tick">✓</span></a></li>
+    <li><a href="#scheduler"><span class="n">02</span>Scheduler loop<span class="tick">✓</span></a></li>
+    <li><a href="#kv"><span class="n">03</span>KV memory<span class="tick">✓</span></a></li>
+    <li><a href="#radix"><span class="n">04</span>Radix cache<span class="tick">✓</span></a></li>
+    <li><a href="#hicache"><span class="n">05</span>HiCache tiers<span class="tick">✓</span></a></li>
+    <li><a href="#pd"><span class="n">06</span>PD disaggregation<span class="tick">✓</span></a></li>
+    <li><a href="#decoding"><span class="n">07</span>Sampling &amp; spec<span class="tick">✓</span></a></li>
+    <li><a href="#entropy"><span class="n">08</span>Entropy<span class="tick">✓</span></a></li>
+    <li><a href="#hack"><span class="n">09</span>Where to hack<span class="tick">✓</span></a></li>
+    <li><a href="#lab"><span class="n">10</span>GPU exercises<span class="tick">✓</span></a></li>
+    <li><a href="#glossary"><span class="n">11</span>Glossary<span class="tick">✓</span></a></li>
+  </ol>
+  <div class="legend">
+    <div><span style="background:var(--accent)"></span>active path / cached</div>
+    <div><span style="background:var(--hot)"></span>hot spot / in use</div>
+  </div>
+</nav>
+
+<main>
+<header class="mast">
+  <div class="eyebrow">Onboarding notes · AI inference</div>
+  <h1>SGLang Source Field Guide</h1>
+  <p class="lede">A guided tour of the SGLang runtime (<code>python/sglang/srt</code>) for someone who has read the paper and run a model, but has not opened the code yet. It follows one request from HTTP to GPU and back. Then it goes deep on three areas: KV cache, prefill/decode disaggregation, and the decoding step where entropy signals live.</p>
+  <p>Every file reference links to the exact line on GitHub at commit <code>3420bae</code> (main, 16 Oct 2026). SGLang moves fast, so line numbers drift on newer commits, but the class and function names are stable anchors. Search for them.</p>
+</header>
+
+<!-- 00 -->
+<section class="ch" id="start">
+  <div class="chhead"><span class="chnum">00</span><h2>Start here</h2></div>
+  <p class="why">The repo has about 10,700 files. You need roughly 25 of them to understand how serving works.</p>
+  <h3>Reading order</h3>
+  <p>Read chapters 01 → 02 first. They give you the vocabulary (<code>Req</code>, <code>ScheduleBatch</code>, <code>ForwardBatch</code>, prefill vs decode) that everything else uses. After that, chapters 03–05 (KV cache), 06 (PD) and 07–08 (decoding) are independent. Read them in any order.</p>
+  <h3>The directories that matter</h3>
+  <p>All paths are under <code>python/sglang/srt/</code> unless noted. Orange cards are the three focus areas.</p>
+  <div class="dirs">
+    <div class="dir"><code>entrypoints/</code><p>HTTP server (FastAPI), OpenAI-compatible routes, the <code>Engine</code> that spawns all processes.</p></div>
+    <div class="dir"><code>managers/</code><p>The control plane: <code>TokenizerManager</code>, <code>Scheduler</code>, <code>DetokenizerManager</code>, batch and request structs, scheduling policy.</p></div>
+    <div class="dir"><code>model_executor/</code><p><code>ModelRunner</code>: turns a batch into GPU tensors, runs the model or a CUDA graph, samples.</p></div>
+    <div class="dir"><code>layers/</code><p>Building blocks: <code>RadixAttention</code>, attention backends (FlashInfer, FA3, Triton, TRT-LLM), the <code>Sampler</code>, logits processor, MoE.</p></div>
+    <div class="dir focus"><code>mem_cache/</code><p>All KV memory: token pools, slot allocators, radix trees, host (L2) mirrors, storage (L3) backends.</p></div>
+    <div class="dir focus"><code>disaggregation/</code><p>PD split: prefill and decode scheduler mixins, transfer backends (Mooncake, NIXL, MORI, Ascend).</p></div>
+    <div class="dir focus"><code>speculative/</code> · <code>sampling/</code><p>EAGLE/NGRAM/DSPARK speculative decoding, sampling params, penalties, custom logit processors.</p></div>
+    <div class="dir"><code>models/</code><p>One file per architecture (Llama, Qwen, DeepSeek…). Mostly standard PyTorch modules wired to SGLang layers.</p></div>
+    <div class="dir"><code>arg_groups/fields/</code><p>Every CLI flag, grouped (<code>memory.py</code>, <code>disagg.py</code>, <code>spec.py</code>, <code>schedule.py</code>) with help text and defaults.</p></div>
+    <div class="dir"><code>sgl-model-gateway/</code> <span style="font-size:.75rem;color:var(--muted)">(repo root)</span><p>The router (Rust) that sits in front of many workers and pairs prefill with decode servers.</p></div>
+  </div>
+  <div class="note"><b>Tip.</b> When a flag name puzzles you, search for it in <code>arg_groups/fields/</code>. The help strings there are the most up-to-date description of what each knob does.</div>
+  <label class="mark"><input type="checkbox" id="read-start" data-sec="start"> Mark chapter as read</label>
+</section>
+
+<!-- 01 -->
+<section class="ch" id="map">
+  <div class="chhead"><span class="chnum">01</span><h2>A request's journey</h2></div>
+  <p class="why">SGLang is several OS processes connected by ZeroMQ sockets. Know which process owns which job and the rest of the code becomes easy to place.</p>
+
+  <div class="inst" id="journey">
+    <div class="inst-head"><span class="inst-title">Follow one /generate call</span><span class="inst-tag">Step through</span></div>
+    <div class="diagram">
+      <svg viewBox="0 0 900 330" role="img" aria-label="Process diagram: client, main process with HTTP server and TokenizerManager, Scheduler subprocess with model worker, DetokenizerManager subprocess">
+        <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0L10,5L0,10z" class="arrowhead"/></marker></defs>
+        <rect class="proc" x="120" y="20" width="250" height="290" rx="10"/>
+        <text x="132" y="40" class="t-mono t-muted" font-size="11">main process</text>
+        <rect class="proc" x="420" y="20" width="300" height="290" rx="10"/>
+        <text x="432" y="40" class="t-mono t-muted" font-size="11">scheduler process ×(TP ranks)</text>
+        <rect class="proc" x="750" y="150" width="140" height="160" rx="10"/>
+        <text x="760" y="170" class="t-mono t-muted" font-size="11">detokenizer proc</text>
+
+        <g id="j-client"><rect class="box" x="10" y="120" width="90" height="60" rx="6"/><text x="55" y="155" text-anchor="middle" font-size="13" font-weight="600">Client</text></g>
+        <g id="j-http"><rect class="box" x="140" y="55" width="210" height="60" rx="6"/><text x="245" y="80" text-anchor="middle" font-size="13" font-weight="600">HTTP server</text><text x="245" y="99" text-anchor="middle" font-size="11" class="t-mono t-muted">entrypoints/http_server.py</text></g>
+        <g id="j-tok"><rect class="box" x="140" y="150" width="210" height="70" rx="6"/><text x="245" y="178" text-anchor="middle" font-size="13" font-weight="600">TokenizerManager</text><text x="245" y="198" text-anchor="middle" font-size="11" class="t-mono t-muted">tokenize · track rid · stream</text></g>
+        <g id="j-sched"><rect class="box" x="440" y="55" width="260" height="70" rx="6"/><text x="570" y="83" text-anchor="middle" font-size="13" font-weight="600">Scheduler</text><text x="570" y="103" text-anchor="middle" font-size="11" class="t-mono t-muted">queues · batching · radix cache</text></g>
+        <g id="j-worker"><rect class="box" x="440" y="150" width="260" height="70" rx="6"/><text x="570" y="178" text-anchor="middle" font-size="13" font-weight="600">TpModelWorker → ModelRunner</text><text x="570" y="198" text-anchor="middle" font-size="11" class="t-mono t-muted">ForwardBatch · CUDA graph · sample</text></g>
+        <g id="j-kv"><rect class="box" x="440" y="245" width="260" height="50" rx="6"/><text x="570" y="275" text-anchor="middle" font-size="12" font-weight="600">KV pools on GPU (mem_cache)</text></g>
+        <g id="j-detok"><rect class="box" x="765" y="195" width="112" height="70" rx="6"/><text x="821" y="225" text-anchor="middle" font-size="12" font-weight="600">Detokenizer</text><text x="821" y="243" text-anchor="middle" font-size="11" class="t-mono t-muted">ids → text</text></g>
+
+        <path id="e1" class="edge" d="M100 140 L140 95" marker-end="url(#ah)"/>
+        <path id="e2" class="edge" d="M245 115 L245 150" marker-end="url(#ah)"/>
+        <path id="e3" class="edge" d="M350 170 C 400 170, 400 95, 440 92" marker-end="url(#ah)"/>
+        <text x="372" y="140" font-size="10" class="t-mono t-muted">ZMQ</text>
+        <path id="e4" class="edge" d="M570 125 L570 150" marker-end="url(#ah)"/>
+        <path id="e5" class="edge" d="M570 220 L570 245" marker-end="url(#ah)"/>
+        <path id="e6" class="edge" d="M700 100 C 760 100, 815 140, 821 195" marker-end="url(#ah)"/>
+        <text x="738" y="120" font-size="10" class="t-mono t-muted">ZMQ</text>
+        <path id="e7" class="edge" d="M765 245 C 600 320, 420 320, 300 220" marker-end="url(#ah)"/>
+        <path id="e8" class="edge" d="M140 190 L100 165" marker-end="url(#ah)"/>
+      </svg>
+    </div>
+    <div class="stepper">
+      <div class="stepctl">
+        <button id="j-prev" aria-label="Previous step">← Prev</button>
+        <div class="dots" id="j-dots"></div>
+        <button id="j-next" class="primary" aria-label="Next step">Next →</button>
+      </div>
+      <div class="stepbody" id="j-body" aria-live="polite"></div>
+    </div>
+  </div>
+
+  <h3>The three data structures to keep apart</h3>
+  <div class="tbl"><table>
+    <tr><th>Struct</th><th>Lives in</th><th>What it holds</th></tr>
+    <tr><td><code>Req</code></td><td>Scheduler (CPU)</td><td>One request: input ids, output ids so far, sampling params, its row in the KV pool, the radix-tree node it locked, finish state.</td></tr>
+    <tr><td><code>ScheduleBatch</code></td><td>Scheduler (CPU)</td><td>A list of <code>Req</code>s plus a <code>forward_mode</code>. Owns pool references and does the allocation (<code>prepare_for_extend</code> / <code>prepare_for_decode</code>).</td></tr>
+    <tr><td><code>ForwardBatch</code></td><td>ModelRunner (GPU)</td><td>Flat GPU tensors: <code>input_ids</code>, <code>positions</code>, <code>seq_lens</code>, <code>req_pool_indices</code>, <code>out_cache_loc</code> (where new KV gets written). Built by <code>ForwardBatch.init_new</code>.</td></tr>
+  </table></div>
+  <p>The module docstring at the top of <a class="src" data-p="srt/managers/schedule_batch.py" data-l="40">schedule_batch.py</a> states this split. The reason it matters: the scheduler does bookkeeping on Python lists, the runner only sees tensors, and the overlap scheduler (chapter 02) depends on the two being separable.</p>
+
+  <h3>Forward modes</h3>
+  <p><a class="src" data-p="srt/model_executor/forward_batch_info.py" data-l="196">ForwardMode</a> tells the attention backend what shape of work it is doing. You will meet these constantly:</p>
+  <div class="tbl"><table>
+    <tr><th>Mode</th><th>Meaning</th></tr>
+    <tr><td><code>EXTEND</code></td><td>Prefill. "Extend" because the first part of the sequence may already be cached (prefix hit), so only the remainder is computed.</td></tr>
+    <tr><td><code>DECODE</code></td><td>One new token per request.</td></tr>
+    <tr><td><code>MIXED</code></td><td>Chunked prefill and decode rows in one forward (<code>--enable-mixed-chunk</code>).</td></tr>
+    <tr><td><code>TARGET_VERIFY</code> / <code>DRAFT_EXTEND_V2</code></td><td>Speculative decoding: the target model checks draft tokens; the draft model catches up.</td></tr>
+    <tr><td><code>PREBUILT</code></td><td>PD decode server: the KV arrived over the network, so prefill is skipped and only metadata is set up.</td></tr>
+    <tr><td><code>IDLE</code></td><td>Data-parallel attention: this rank has no work but must join collective ops.</td></tr>
+  </table></div>
+
+  <details class="check"><summary>Why is tokenization in a separate process from scheduling?</summary><div class="a"><p>The scheduler loop is latency-critical: every millisecond it spends on CPU work is a millisecond the GPU may sit idle between batches. Tokenizing long prompts and detokenizing streams are CPU-heavy and would stall it. Python's GIL means threads would not help much, so they run in other processes and talk over ZMQ.</p></div></details>
+  <label class="mark"><input type="checkbox" data-sec="map"> Mark chapter as read</label>
+</section>
+
+<!-- 02 -->
+<section class="ch" id="scheduler">
+  <div class="chhead"><span class="chnum">02</span><h2>The scheduler loop</h2></div>
+  <p class="why"><code>managers/scheduler.py</code> is 6,000+ lines, but its heart is a <code>while True</code> loop of about 30 lines. Everything else is a helper for one of its four steps.</p>
+
+  <figure class="code">
+<pre><code><span class="k">def</span> event_loop_normal(self):
+    <span class="k">while</span> True:
+        self.ingest_requests()                      <span class="c"># 1. drain ZMQ: new Reqs → waiting_queue</span>
+        plan = self.get_next_batch_to_run(          <span class="c"># 2. pick prefill OR decode batch</span>
+            running_batch=self.running_batch, last_batch=self.last_batch)
+        self.running_batch = plan.running_batch
+        batch = plan.batch_to_run
+        <span class="k">if</span> batch:
+            result = self.run_batch(batch)          <span class="c"># 3. GPU forward + sample</span>
+            self.process_batch_result(batch, result) <span class="c"># 4. append tokens, finish, free KV, stream</span>
+        <span class="k">else</span>:
+            self.on_idle()
+        self.last_batch = batch</code></pre>
+    <figcaption><span>Abridged from <code>Scheduler.event_loop_normal</code></span><a class="src" data-p="srt/managers/scheduler.py" data-l="1958">scheduler.py:1958</a></figcaption>
+  </figure>
+
+  <h3>Which loop actually runs</h3>
+  <p><a class="src" data-p="srt/managers/scheduler.py" data-l="6055">_dispatch_event_loop_once</a> picks one of nine loops from two settings. The PD loops (chapter 06) are the same four steps with extra queues bolted on.</p>
+  <div class="tbl"><table>
+    <tr><th>disaggregation_mode</th><th>default (overlap on)</th><th><code>--disable-overlap-schedule</code></th><th>pp_size &gt; 1</th></tr>
+    <tr><td><code>null</code></td><td><code>event_loop_overlap</code></td><td><code>event_loop_normal</code></td><td><code>event_loop_pp</code></td></tr>
+    <tr><td><code>prefill</code></td><td><code>event_loop_overlap_disagg_prefill</code></td><td><code>event_loop_normal_disagg_prefill</code></td><td><code>event_loop_pp_disagg_prefill</code></td></tr>
+    <tr><td><code>decode</code></td><td><code>event_loop_overlap_disagg_decode</code></td><td><code>event_loop_normal_disagg_decode</code></td><td><code>event_loop_pp_disagg_decode</code></td></tr>
+  </table></div>
+
+  <h3>Overlap scheduling: hide the CPU</h3>
+  <p>In the normal loop the GPU waits while the CPU processes results and builds the next batch. <a class="src" data-p="srt/managers/scheduler.py" data-l="1993">event_loop_overlap</a> launches batch N+1 <em>before</em> processing batch N's result. Results go into a <code>result_queue</code> and are popped one iteration later. The GPU kernels are asynchronous, so the CPU's bookkeeping for N overlaps with the GPU computing N+1.</p>
+  <div class="inst">
+    <div class="inst-head"><span class="inst-title">Timeline, normal vs overlap</span><span class="inst-tag">Diagram</span></div>
+    <div class="diagram">
+      <svg viewBox="0 0 880 210" role="img" aria-label="Timeline comparing normal and overlap scheduling">
+        <text x="0" y="22" font-size="12" font-weight="600">Normal</text>
+        <text x="0" y="52" font-size="11" class="t-mono t-muted">CPU</text>
+        <text x="0" y="82" font-size="11" class="t-mono t-muted">GPU</text>
+        <g font-size="11" class="t-mono">
+          <rect x="60" y="38" width="70" height="22" rx="3" class="hotbox"/><text x="95" y="53" text-anchor="middle">sched 1</text>
+          <rect x="130" y="68" width="160" height="22" rx="3" class="box on"/><text x="210" y="83" text-anchor="middle">forward 1</text>
+          <rect x="290" y="38" width="70" height="22" rx="3" class="hotbox"/><text x="325" y="53" text-anchor="middle">result 1</text>
+          <rect x="360" y="38" width="70" height="22" rx="3" class="hotbox"/><text x="395" y="53" text-anchor="middle">sched 2</text>
+          <rect x="430" y="68" width="160" height="22" rx="3" class="box on"/><text x="510" y="83" text-anchor="middle">forward 2</text>
+          <rect x="590" y="38" width="70" height="22" rx="3" class="hotbox"/><text x="625" y="53" text-anchor="middle">result 2</text>
+          <text x="360" y="110" text-anchor="middle" class="t-muted" font-size="10">GPU idle ↑ 140 units</text>
+        </g>
+        <text x="0" y="140" font-size="12" font-weight="600">Overlap</text>
+        <text x="0" y="170" font-size="11" class="t-mono t-muted">CPU</text>
+        <text x="0" y="200" font-size="11" class="t-mono t-muted">GPU</text>
+        <g font-size="11" class="t-mono">
+          <rect x="60" y="156" width="70" height="22" rx="3" class="hotbox"/><text x="95" y="171" text-anchor="middle">sched 1</text>
+          <rect x="130" y="186" width="160" height="22" rx="3" class="box on"/><text x="210" y="201" text-anchor="middle">forward 1</text>
+          <rect x="135" y="156" width="70" height="22" rx="3" class="hotbox"/><text x="170" y="171" text-anchor="middle">sched 2</text>
+          <rect x="290" y="186" width="160" height="22" rx="3" class="box on"/><text x="370" y="201" text-anchor="middle">forward 2</text>
+          <rect x="295" y="156" width="70" height="22" rx="3" class="hotbox"/><text x="330" y="171" text-anchor="middle">result 1</text>
+          <rect x="365" y="156" width="70" height="22" rx="3" class="hotbox"/><text x="400" y="171" text-anchor="middle">sched 3</text>
+          <rect x="450" y="186" width="160" height="22" rx="3" class="box on"/><text x="530" y="201" text-anchor="middle">forward 3</text>
+          <rect x="455" y="156" width="70" height="22" rx="3" class="hotbox"/><text x="490" y="171" text-anchor="middle">result 2</text>
+        </g>
+      </svg>
+    </div>
+    <p class="where">Caveat: batch N+1 is built before N's sampled token is known. The code copes with this using placeholder tokens resolved on the GPU (a "future map", see <code>managers/overlap_utils.py</code>). It also has <code>is_disable_overlap_for_batch</code> for cases where it must sync, for example when grammar-constrained decoding needs the previous token.</p>
+  </div>
+
+  <h3>Picking the next batch</h3>
+  <p><a class="src" data-p="srt/managers/scheduler.py" data-l="3806">get_next_batch_to_run</a> follows a simple rule: <b>prefill wins</b>. It first merges the last prefill batch's requests into <code>running_batch</code> (they are decoding now). Then it tries to build a new prefill batch from <code>waiting_queue</code>. Only if that yields nothing does it run one decode step for <code>running_batch</code>.</p>
+  <ol class="steps">
+    <li><b>Sort the waiting queue</b> with the schedule policy (<code>SchedulePolicy.calc_priority</code>). The default <code>lpm</code> (longest prefix match) runs requests with the biggest cache hits first, because they are cheapest.</li>
+    <li><b>Admit requests one by one</b> with a <code>PrefillAdder</code> (<a class="src" data-p="srt/managers/schedule_policy.py" data-l="1347">add_one_req</a>). Each request first does a radix-tree prefix match (<code>req.init_next_round_input(tree_cache)</code>). Then the adder checks three budgets: total free KV tokens (counting what eviction could free), <code>max_prefill_tokens</code> (default 16384) for this forward, and <code>chunked_prefill_size</code>.</li>
+    <li><b>Chunk long prompts.</b> If a prompt does not fit the chunk budget, the adder takes a slice and marks it <code>chunked_req</code>. The next iteration continues it. This bounds how long any prefill forward takes, so decode requests aren't starved.</li>
+    <li><b>Build the batch</b>: <code>ScheduleBatch.init_new(...)</code> then <code>prepare_for_extend()</code>, which allocates KV slots for the new tokens.</li>
+  </ol>
+  <figure class="code">
+<pre><code><span class="k">class</span> CacheAwarePolicy(Enum):
+    LPM = <span class="h">"lpm"</span>          <span class="c"># longest prefix match</span>
+    DFS_WEIGHT = "dfs-weight"
+    HRRN = "hrrn"        <span class="c"># highest response ratio next, token-based aging</span>
+    SHORTEST_PREFILL_FIRST = "shortest-prefill-first"
+
+<span class="k">class</span> CacheAgnosticPolicy(Enum):
+    FCFS = "fcfs"; LOF = "lof"; RANDOM = "random"; ROUTING_KEY = "routing-key"</code></pre>
+    <figcaption><span><code>--schedule-policy</code> values</span><a class="src" data-p="srt/managers/schedule_policy.py" data-l="168">schedule_policy.py:168</a></figcaption>
+  </figure>
+
+  <h3>When decode runs out of memory: retraction</h3>
+  <p>Admission is optimistic. It reserves room for future output tokens using <code>new_token_ratio</code>, a guess at what fraction of <code>max_new_tokens</code> a request will really use. If the guess is wrong, <a class="src" data-p="srt/managers/scheduler.py" data-l="4376">update_running_batch</a> finds <code>check_decode_mem()</code> fails. It then calls <code>batch.retract_decode()</code>: some running requests are evicted back to the waiting queue (their KV freed), and <code>new_token_ratio</code> is raised so admission becomes more conservative. The ratio then decays slowly back down each step. The log line to look for is <code>#retracted_reqs</code>.</p>
+
+  <details class="check"><summary>A long prompt (40k tokens) arrives while 100 requests are decoding. With chunked_prefill_size=8192, what happens?</summary><div class="a"><p>The prompt is split into 5 chunks. Each loop iteration runs one chunk as a prefill batch (prefill wins). With <code>--enable-mixed-chunk</code>, the decode rows ride along in the same forward as <code>MIXED</code>. Without it, they wait for the next decode step. Either way, no single forward is a 40k-token monster that freezes everyone's token stream for seconds.</p></div></details>
+  <label class="mark"><input type="checkbox" data-sec="scheduler"> Mark chapter as read</label>
+</section>
+
+<!-- 03 -->
+<section class="ch" id="kv">
+  <div class="chhead"><span class="chnum">03</span><h2>KV memory: three layers of indirection</h2></div>
+  <p class="why">The KV cache is not one tensor per request. It is one big pool per layer, and two index tables say which slots belong to whom. That indirection is what makes prefix sharing, paging, and PD transfer possible.</p>
+
+  <div class="tbl"><table>
+    <tr><th>Layer</th><th>Class</th><th>Shape / content</th></tr>
+    <tr><td>Request → token slots</td><td><a class="src" data-p="srt/mem_cache/memory_pool.py" data-l="374">ReqToTokenPool</a></td><td><code>req_to_token</code>: int32 <code>[max_running_reqs+1, max_context_len]</code>. Row = <code>req.req_pool_idx</code>; entry <i>j</i> = slot index holding token <i>j</i>'s KV.</td></tr>
+    <tr><td>Free-slot bookkeeping</td><td><a class="src" data-p="srt/mem_cache/allocator/token.py" data-l="54">TokenToKVPoolAllocator</a> / <a class="src" data-p="srt/mem_cache/allocator/paged.py" data-l="181">PagedTokenToKVPoolAllocator</a></td><td>A tensor <code>free_pages</code>. <code>alloc(n)</code> slices off the front; <code>free(idx)</code> appends. With <code>page_size&gt;1</code> it hands out whole pages.</td></tr>
+    <tr><td>Physical bytes</td><td><a class="src" data-p="srt/mem_cache/memory_pool.py" data-l="2198">MHATokenToKVPool</a> (also <code>MLATokenToKVPool</code> for DeepSeek)</td><td><code>k_buffer[layer]</code>, <code>v_buffer[layer]</code>: <code>[size+page_size, kv_heads, head_dim]</code>, one pair per layer.</td></tr>
+  </table></div>
+  <p>Slot 0 is reserved as a dummy. CUDA-graph padding rows write their garbage there, which is why free slots start at 1.</p>
+
+  <div class="inst">
+    <div class="inst-head"><span class="inst-title">Two requests sharing a 4-token system prompt</span><span class="inst-tag">Worked example</span></div>
+    <div class="kvex">
+      <div class="kvcol"><h5>req_to_token</h5><div class="sub">row = req_pool_idx</div>
+        <div class="cells">
+          <div class="row"><span class="lab">req A (1)</span><span class="cell s">7</span><span class="cell s">8</span><span class="cell s">9</span><span class="cell s">10</span><span class="cell a">11</span><span class="cell a">12</span></div>
+          <div class="row"><span class="lab">req B (2)</span><span class="cell s">7</span><span class="cell s">8</span><span class="cell s">9</span><span class="cell s">10</span><span class="cell b">21</span><span class="cell b">22</span><span class="cell b">23</span></div>
+        </div></div>
+      <div class="kvcol"><h5>allocator</h5><div class="sub">free_pages (page_size = 1)</div>
+        <div class="cells"><div class="row"><span class="lab">free</span><span class="cell">13</span><span class="cell">14</span><span class="cell">…</span><span class="cell">20</span><span class="cell">24</span><span class="cell">…</span></div></div>
+        <p class="where">B asked for 3 slots for its new tokens and got 21–23. The shared 7–10 were not allocated again.</p></div>
+      <div class="kvcol"><h5>k_buffer[ℓ]</h5><div class="sub">[slot, heads, head_dim]</div>
+        <div class="cells">
+          <div class="row"><span class="lab">7–10</span><span class="cell s" style="flex:1">"You are a bot"</span></div>
+          <div class="row"><span class="lab">11–12</span><span class="cell a" style="flex:1">A's tokens</span></div>
+          <div class="row"><span class="lab">21–23</span><span class="cell b" style="flex:1">B's tokens</span></div>
+        </div></div>
+    </div>
+  </div>
+
+  <h3>Who writes and who reads</h3>
+  <p><b>Write.</b> During a forward, every attention layer is a <a class="src" data-p="srt/layers/radix_attention.py" data-l="159">RadixAttention</a>. It calls the backend, which calls <code>token_to_kv_pool.set_kv_buffer(layer, out_cache_loc, k, v)</code>. <code>out_cache_loc</code> is the list of freshly allocated slots for this batch's new tokens.</p>
+  <p><b>Read.</b> The attention kernel needs, for each request, the list of slots holding its context. The backend builds a flat <code>kv_indices</code> array by gathering rows of <code>req_to_token</code> on the GPU (<a class="src" data-p="kernels/ops/kvcache/kv_indices.py" data-l="22">create_flashinfer_kv_indices_triton</a>). That array, plus <code>kv_indptr</code> offsets, is exactly the "page table" format FlashInfer and FlashAttention's paged mode accept.</p>
+  <figure class="code">
+<pre><code><span class="c"># MHATokenToKVPool._create_buffers_normal (default NHD layout)</span>
+k_shape, v_shape = self._kv_buffer_shapes()   <span class="c"># (size + page_size, head_num, head_dim)</span>
+self.k_buffer = [torch.zeros(k_shape, dtype=self.store_dtype, device=self.device)
+                 <span class="k">for</span> _ <span class="k">in</span> range(self.layer_num)]
+self.v_buffer = [torch.zeros(v_shape, dtype=self.store_dtype, device=self.device)
+                 <span class="k">for</span> _ <span class="k">in</span> range(self.layer_num)]</code></pre>
+    <figcaption><span>One K and one V tensor per layer. fp8 KV is stored as uint8 views.</span><a class="src" data-p="srt/mem_cache/memory_pool.py" data-l="2531">memory_pool.py:2531</a></figcaption>
+  </figure>
+  <h3>How big is the pool?</h3>
+  <p>At startup, after loading weights, the runner measures free GPU memory, keeps <code>--mem-fraction-static</code> of the total for weights + KV, and divides the KV share by bytes-per-token. For an MHA model that is <code>2 × layers × kv_heads × head_dim × dtype_bytes</code>. The server log prints the result as <code>max_total_num_tokens</code>, the most useful number to know about your deployment.</p>
+  <details class="check"><summary>Your 3B model has 36 layers, 2 KV heads, head_dim 128, bf16. How many bytes per token of KV?</summary><div class="a"><p>2 (K and V) × 36 × 2 × 128 × 2 bytes = 36,864 bytes ≈ 36 KiB per token. With 20 GiB left for KV, that is about 580k tokens. Check your own model's <code>config.json</code> for the real values.</p></div></details>
+  <label class="mark"><input type="checkbox" data-sec="kv"> Mark chapter as read</label>
+</section>
+
+<!-- 04 -->
+<section class="ch" id="radix">
+  <div class="chhead"><span class="chnum">04</span><h2>Radix cache: reusing prefixes</h2></div>
+  <p class="why">RadixAttention, the core idea of the SGLang paper, is a radix tree whose edges are token sequences and whose values are the KV slot indices for those tokens.</p>
+  <p>Two classes to know. <a class="src" data-p="srt/mem_cache/radix_cache.py" data-l="281">RadixCache</a> in <code>radix_cache.py</code> is the classic, compact implementation (about 800 lines). Read it to learn the algorithm. <a class="src" data-p="srt/mem_cache/unified_radix_cache.py" data-l="175">UnifiedRadixCache</a> is what <a class="src" data-p="srt/mem_cache/registry.py" data-l="83">default_radix_cache_factory</a> builds by default today. It runs the same algorithm, but each node carries per-component data (Full attention, sliding-window, Mamba state) plus HiCache host copies. Learn on the first, debug on the second.</p>
+
+  <figure class="code">
+<pre><code><span class="k">class</span> TreeNode:
+    children: dict          <span class="c"># child_key (first token / first page) → TreeNode</span>
+    parent: TreeNode
+    key: RadixKey           <span class="c"># the token ids on this edge</span>
+    value: Tensor | None    <span class="c"># KV slot indices for those tokens; None = evicted</span>
+    lock_ref: int           <span class="c"># &gt;0 → some running request uses it → not evictable</span>
+    last_access_time        <span class="c"># for LRU</span>
+    hit_count, priority     <span class="c"># for LFU / priority eviction</span></code></pre>
+    <figcaption><span>Abridged</span><a class="src" data-p="srt/mem_cache/radix_cache.py" data-l="250">radix_cache.py:250</a></figcaption>
+  </figure>
+
+  <h3>The four operations</h3>
+  <div class="tbl"><table>
+    <tr><th>Operation</th><th>When the scheduler calls it</th><th>What it does</th></tr>
+    <tr><td><a class="src" data-p="srt/mem_cache/radix_cache.py" data-l="364">match_prefix</a></td><td>Admitting a request (<code>init_next_round_input</code>)</td><td>Walks down matching tokens. If the match ends mid-edge, it <b>splits</b> the node (<a class="src" data-p="srt/mem_cache/radix_cache.py" data-l="677">_split_node</a>) so the boundary is exact. Returns the concatenated slot indices, which become <code>req.prefix_indices</code>.</td></tr>
+    <tr><td><a class="src" data-p="srt/mem_cache/radix_cache.py" data-l="582">inc_lock_ref</a> / <code>dec_lock_ref</code></td><td>Admit / release</td><td>Walks from the node to the root, incrementing <code>lock_ref</code>. Moves token counts between <code>evictable_size_</code> and <code>protected_size_</code>.</td></tr>
+    <tr><td><a class="src" data-p="srt/mem_cache/radix_cache.py" data-l="705">insert</a></td><td>Request finishes or a chunk completes (<code>checkpoint</code>)</td><td>Walks the shared part. The unshared tail becomes a new leaf whose <code>value</code> is the request's own slots, so ownership passes from the request to the tree.</td></tr>
+    <tr><td><a class="src" data-p="srt/mem_cache/radix_cache.py" data-l="552">evict</a></td><td>Allocator is short of slots</td><td>Heap of unlocked leaves ordered by the eviction strategy (LRU by default). Frees a leaf's slots, deletes it, and pushes the parent if it became a leaf.</td></tr>
+  </table></div>
+
+  <div class="inst" id="radixsim">
+    <div class="inst-head"><span class="inst-title">Radix cache simulator</span><span class="inst-tag">Try it · 1 word = 1 token · page_size 1 · LRU</span></div>
+    <div class="sim-grid">
+      <div class="sim-in">
+        <label for="rx-input">Prompt tokens</label>
+        <input type="text" id="rx-input" value="SYS you are a helpful bot USER what is a KV cache" autocomplete="off">
+        <div class="presets" id="rx-presets"></div>
+        <div class="stepctl">
+          <button class="primary" id="rx-send">Send request</button>
+          <button id="rx-finish">Finish running</button>
+          <button id="rx-evict">Evict 4 tokens</button>
+          <button id="rx-reset">Reset</button>
+        </div>
+        <div>
+          <div class="stats" id="rx-stats"></div>
+          <div class="meter" style="margin-top:.4rem" aria-hidden="true"><i class="m-prot" id="rx-m1"></i><i class="m-evict" id="rx-m2"></i><i class="m-priv" id="rx-m3"></i></div>
+          <div class="where">Pool capacity 40 slots. Orange: locked by running requests · teal: cached and evictable · grey: new tokens owned by a running request.</div>
+        </div>
+        <div><div class="where" style="margin-bottom:.3rem">Running requests</div><div class="running" id="rx-running"><span class="where">none</span></div></div>
+        <div class="log" id="rx-log" aria-live="polite"></div>
+      </div>
+      <div class="tree" id="rx-tree" aria-label="Radix tree"></div>
+    </div>
+  </div>
+  <p>Things to try. Send the two "chat" presets: the second hits the shared system prompt and splits a node. Send several requests without finishing them, then try a new one: eviction cannot touch locked paths, so the request is refused. In the real scheduler it would wait in the queue, or running requests would be retracted.</p>
+
+  <h3>The lifecycle inside the scheduler</h3>
+  <ol class="steps">
+    <li><b>Admit</b>: <code>match_kv_cache</code> sets <code>req.prefix_len</code> and <code>req.last_node</code>, and the matched path is locked. KV slots are allocated only for <code>extend_input_len = len(input) − prefix_len</code>.</li>
+    <li><b>Chunk done</b>: <code>checkpoint_kv_cache</code> inserts the computed part, so a second request with the same long document can hit it before the first finishes.</li>
+    <li><b>Finish</b>: <a class="src" data-p="srt/mem_cache/common.py" data-l="394">release_kv_cache</a> inserts (<code>checkpoint</code>), frees slots the tree already had (duplicates), unlocks, and frees the request's <code>req_to_token</code> row.</li>
+  </ol>
+  <div class="note"><b>Eviction policies.</b> <code>--radix-eviction-policy</code> accepts <code>lru</code> (default), <code>lfu</code>, <code>slru</code>, <code>priority</code>, <code>tlru</code> and more. All live in <a class="src" data-p="srt/mem_cache/evict_policy.py" data-l="16">evict_policy.py</a> as tiny classes with one method, <code>get_priority(node)</code>. That makes a new eviction idea a very cheap experiment.</div>
+  <details class="check"><summary>Why must a split happen during match, not only during insert?</summary><div class="a"><p>The request will lock the matched path. If the match ended in the middle of an edge, the node would hold both shared tokens (that the request uses) and unshared tokens (that it does not). Locking it would protect the unshared part from eviction for no reason, and the slot list would be the wrong length. Splitting makes the locked unit exactly what the request depends on.</p></div></details>
+  <label class="mark"><input type="checkbox" data-sec="radix"> Mark chapter as read</label>
+</section>
+
+<!-- 05 -->
+<section class="ch" id="hicache">
+  <div class="chhead"><span class="chnum">05</span><h2>HiCache: GPU → host → storage</h2></div>
+  <p class="why">GPU memory holds maybe a few hundred thousand tokens. Multi-turn chat and agent workloads revisit far more context than that. HiCache adds two slower but larger tiers under the radix tree.</p>
+  <div class="tbl"><table>
+    <tr><th>Tier</th><th>Where</th><th>Code</th><th>Size knob</th></tr>
+    <tr><td>L1</td><td>GPU HBM</td><td><code>mem_cache/memory_pool.py</code></td><td><code>--mem-fraction-static</code></td></tr>
+    <tr><td>L2</td><td>Pinned host DRAM</td><td><code>mem_cache/memory_pool_host.py</code>, <code>pool_host/</code></td><td><code>--hicache-ratio</code> (host/device size, default 2.0) or <code>--hicache-size</code> GB</td></tr>
+    <tr><td>L3</td><td>Distributed / disk storage</td><td><code>mem_cache/storage/&lt;backend&gt;/</code></td><td><code>--hicache-storage-backend</code>: file, mooncake, hf3fs, nixl, aibrix…</td></tr>
+  </table></div>
+  <p>Turn it on with <code>--enable-hierarchical-cache</code>. The data movement is run by <a class="src" data-p="srt/managers/cache_controller.py" data-l="295">HiCacheController</a> on separate CUDA streams and threads, so copies overlap compute. The tree nodes gain <code>host_value</code> next to <code>value</code>. A node can be on GPU, on host, or both.</p>
+  <h4>Write policy (<code>--hicache-write-policy</code>)</h4>
+  <ul>
+    <li><code>write_through</code> (default): copy to host as soon as a node is cached. Eviction from GPU is then free, because the host copy already exists.</li>
+    <li><code>write_back</code>: copy to host only when evicting from GPU. Less PCIe traffic, but slower evictions.</li>
+    <li><code>write_through_selective</code>: write through only nodes that have been hit often enough to be worth it.</li>
+  </ul>
+  <h4>Load path</h4>
+  <p>When a match ends at a node whose KV is on host only, the request carries <code>host_hit_length</code>. During admission, <code>PrefillAdder.add_one_req</code> calls <code>tree_cache.init_load_back(...)</code> to allocate GPU slots and queue an H2D copy. A <code>LayerDoneCounter</code> lets the forward start on layer 0 while later layers are still loading. For L3, <code>prefetch_from_storage</code> starts fetching when the request arrives. <code>--hicache-storage-prefetch-policy</code> (<code>best_effort</code> / <code>wait_complete</code> / <code>timeout</code>) decides how long a request waits for it.</p>
+  <div class="note"><b>Connects to PD.</b> Mooncake appears twice in this codebase: as an L3 HiCache store (<code>mem_cache/storage/mooncake_store/</code>) and as a PD transfer engine (<code>disaggregation/mooncake/</code>). Same RDMA library, two different jobs.</div>
+  <label class="mark"><input type="checkbox" data-sec="hicache"> Mark chapter as read</label>
+</section>
+
+<!-- 06 -->
+<section class="ch" id="pd">
+  <div class="chhead"><span class="chnum">06</span><h2>PD disaggregation</h2></div>
+  <p class="why">Prefill is compute-bound: one big matmul over thousands of tokens. Decode is memory-bandwidth-bound: tiny matmuls, a huge KV read per step. On one GPU they interfere. A long prefill stalls every decode stream, which is the TTFT-versus-ITL tradeoff. PD puts them on separate servers and ships the KV cache between them.</p>
+
+  <div class="inst" id="pdsim">
+    <div class="inst-head"><span class="inst-title">One request through a PD deployment</span><span class="inst-tag">Step through</span></div>
+    <div class="diagram">
+      <svg viewBox="0 0 900 400" role="img" aria-label="PD disaggregation diagram with router, prefill server queues and decode server queues">
+        <defs><marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0L10,5L0,10z" class="arrowhead"/></marker></defs>
+        <g id="p-client"><rect class="box" x="395" y="10" width="110" height="40" rx="6"/><text x="450" y="35" text-anchor="middle" font-size="13" font-weight="600">Client</text></g>
+        <g id="p-router"><rect class="box" x="345" y="75" width="210" height="50" rx="6"/><text x="450" y="97" text-anchor="middle" font-size="13" font-weight="600">Router</text><text x="450" y="114" text-anchor="middle" font-size="10" class="t-mono t-muted">adds bootstrap_room</text></g>
+        <rect class="proc" x="20" y="150" width="390" height="235" rx="10"/>
+        <text x="32" y="170" font-size="12" font-weight="600">Prefill server</text><text x="130" y="170" font-size="10" class="t-mono t-muted">--disaggregation-mode prefill</text>
+        <g id="p-pboot"><rect class="box" x="35" y="185" width="170" height="45" rx="5"/><text x="120" y="205" text-anchor="middle" font-size="12" font-weight="600">BootstrapQueue</text><text x="120" y="221" text-anchor="middle" font-size="10" class="t-mono t-muted">KVSender per req</text></g>
+        <g id="p-pwait"><rect class="box" x="225" y="185" width="170" height="45" rx="5"/><text x="310" y="205" text-anchor="middle" font-size="12" font-weight="600">waiting_queue</text><text x="310" y="221" text-anchor="middle" font-size="10" class="t-mono t-muted">PrefillAdder</text></g>
+        <g id="p-pfwd"><rect class="box" x="225" y="250" width="170" height="45" rx="5"/><text x="310" y="270" text-anchor="middle" font-size="12" font-weight="600">forward (EXTEND)</text><text x="310" y="286" text-anchor="middle" font-size="10" class="t-mono t-muted">send_kv_chunk</text></g>
+        <g id="p-pinf"><rect class="box" x="35" y="250" width="170" height="45" rx="5"/><text x="120" y="270" text-anchor="middle" font-size="12" font-weight="600">inflight_queue</text><text x="120" y="286" text-anchor="middle" font-size="10" class="t-mono t-muted">poll sender</text></g>
+        <g id="p-bs"><rect class="box" x="35" y="320" width="360" height="50" rx="5"/><text x="215" y="342" text-anchor="middle" font-size="12" font-weight="600">Bootstrap server :8998</text><text x="215" y="359" text-anchor="middle" font-size="10" class="t-mono t-muted">/route registry of prefill ranks</text></g>
+
+        <rect class="proc" x="490" y="150" width="390" height="235" rx="10"/>
+        <text x="502" y="170" font-size="12" font-weight="600">Decode server</text><text x="602" y="170" font-size="10" class="t-mono t-muted">--disaggregation-mode decode</text>
+        <g id="p-dpre"><rect class="box" x="505" y="185" width="170" height="45" rx="5"/><text x="590" y="205" text-anchor="middle" font-size="12" font-weight="600">PreallocQueue</text><text x="590" y="221" text-anchor="middle" font-size="10" class="t-mono t-muted">KVReceiver · alloc KV</text></g>
+        <g id="p-dxfer"><rect class="box" x="695" y="185" width="170" height="45" rx="5"/><text x="780" y="205" text-anchor="middle" font-size="12" font-weight="600">TransferQueue</text><text x="780" y="221" text-anchor="middle" font-size="10" class="t-mono t-muted">poll receiver</text></g>
+        <g id="p-dwait"><rect class="box" x="695" y="250" width="170" height="45" rx="5"/><text x="780" y="270" text-anchor="middle" font-size="12" font-weight="600">waiting_queue</text><text x="780" y="286" text-anchor="middle" font-size="10" class="t-mono t-muted">PREBUILT batch</text></g>
+        <g id="p-drun"><rect class="box" x="505" y="250" width="170" height="45" rx="5"/><text x="590" y="270" text-anchor="middle" font-size="12" font-weight="600">running_batch</text><text x="590" y="286" text-anchor="middle" font-size="10" class="t-mono t-muted">DECODE steps</text></g>
+        <g id="p-dkv"><rect class="box" x="505" y="320" width="360" height="50" rx="5"/><text x="685" y="342" text-anchor="middle" font-size="12" font-weight="600">Decode KV pool (pre-allocated slots)</text><text x="685" y="359" text-anchor="middle" font-size="10" class="t-mono t-muted">written remotely by RDMA</text></g>
+
+        <path id="pe-c" class="edge" d="M450 50 L450 75" marker-end="url(#ah2)"/>
+        <path id="pe-rp" class="edge" d="M380 125 L160 185" marker-end="url(#ah2)"/>
+        <path id="pe-rd" class="edge" d="M520 125 L590 185" marker-end="url(#ah2)"/>
+        <path id="pe-hs" class="edge" d="M505 215 C 450 260, 450 330, 395 340" marker-end="url(#ah2)"/>
+        <path id="pe-meta" class="edge" d="M505 200 C 440 160, 260 150, 205 200" marker-end="url(#ah2)"/>
+        <path id="pe-q" class="edge" d="M205 207 L225 207" marker-end="url(#ah2)"/>
+        <path id="pe-f" class="edge" d="M310 230 L310 250" marker-end="url(#ah2)"/>
+        <path id="pe-rdma" class="edge" d="M395 285 C 450 300, 460 320, 505 335" marker-end="url(#ah2)"/>
+        <path id="pe-inf" class="edge" d="M225 272 L205 272" marker-end="url(#ah2)"/>
+        <path id="pe-dx" class="edge" d="M675 207 L695 207" marker-end="url(#ah2)"/>
+        <path id="pe-dw" class="edge" d="M780 230 L780 250" marker-end="url(#ah2)"/>
+        <path id="pe-dr" class="edge" d="M695 272 L675 272" marker-end="url(#ah2)"/>
+        <path id="pe-out" class="edge" d="M560 250 C 600 150, 560 110, 555 100" marker-end="url(#ah2)"/>
+        <text x="452" y="318" font-size="10" class="t-mono" fill="var(--hot)" style="fill:var(--hot)">RDMA</text>
+      </svg>
+    </div>
+    <div class="stepper">
+      <div class="stepctl">
+        <button id="p-prev" aria-label="Previous step">← Prev</button>
+        <div class="dots" id="p-dots"></div>
+        <button id="p-next" class="primary" aria-label="Next step">Next →</button>
+      </div>
+      <div class="stepbody" id="p-body" aria-live="polite"></div>
+    </div>
+  </div>
+
+  <h3>The handshake key: bootstrap_room</h3>
+  <p>The router sends the <em>same</em> request to both servers at once, adding <code>bootstrap_host</code>, <code>bootstrap_port</code> and a random 63-bit <code>bootstrap_room</code>. The room id is how a prefill-side <code>KVSender</code> and a decode-side <code>KVReceiver</code>, created independently on two machines, find each other.</p>
+  <figure class="code">
+<pre><code>tasks = [
+    session.post(f"{prefill_server}/{endpoint}", json=prefill_req),
+    session.post(f"{decode_server}/{endpoint}",  json=decode_req),
+]
+<span class="c"># Wait for both responses to complete. Prefill should end first.</span>
+prefill_response, decode_response = <span class="k">await</span> asyncio.gather(*tasks)
+...
+ret_json = <span class="k">await</span> decode_response.json()   <span class="c"># the user sees decode's answer</span></code></pre>
+    <figcaption><span>MiniLB, the Python debugging router. The production router is Rust in <code>sgl-model-gateway/</code>.</span><a class="src" data-p="../../sgl-model-gateway/bindings/python/src/sglang_router/mini_lb.py" data-l="150">mini_lb.py:150</a></figcaption>
+  </figure>
+
+  <h3>Transfer states</h3>
+  <p>Both sides poll a small state machine, <a class="src" data-p="srt/disaggregation/base/conn.py" data-l="118">KVPoll</a>: <code>Bootstrapping → WaitingForInput → Transferring → Success</code>, or <code>Failed</code>. In tensor parallelism every rank must agree, so the polls are all-reduced across the TP group (<code>poll_and_all_reduce_attn_cp_tp_group</code>) before anyone acts on them.</p>
+
+  <h3>How the bytes move</h3>
+  <p>At startup each side registers its KV buffer addresses (<code>KVArgs.kv_data_ptrs</code>, one pointer per layer) with the transfer engine. When a chunk is ready, the prefill side knows its own slot indices and the decode side's pre-allocated slot indices. Copying is pure pointer arithmetic: for each layer, for each run of contiguous pages, <code>src = base + idx × item_len</code>. The engine writes these blocks directly into the decode GPU's memory with one-sided RDMA.</p>
+  <figure class="code">
+<pre><code><span class="k">for</span> prefill_index, decode_index <span class="k">in</span> zip(src_blocks, dst_blocks):
+    src_addr = src_ptr + int(prefill_index[0]) * item_len
+    dst_addr = dst_ptr + int(decode_index[0]) * item_len
+    length   = item_len * len(prefill_index)
+    transfer_blocks.append((src_addr, dst_addr, length))
+...
+<span class="k">return</span> self.engine.batch_transfer_sync(session_id, src_addrs, dst_addrs, lengths)</code></pre>
+    <figcaption><span><code>MooncakeKVManager._send_kvcache_generic</code> → <code>_transfer_data</code></span><a class="src" data-p="srt/disaggregation/mooncake/conn.py" data-l="792">mooncake/conn.py:792</a></figcaption>
+  </figure>
+  <p>Besides KV, the last chunk carries a small <b>metadata buffer</b> (<a class="src" data-p="srt/disaggregation/utils.py" data-l="366">MetadataBuffers</a>). It holds the first output token (prefill already sampled it), logprobs, cached-token count, and the hidden states that EAGLE's draft model needs to keep going on the decode side.</p>
+
+  <h3>Flags you will use</h3>
+  <div class="tbl"><table>
+    <tr><th>Flag</th><th>Default</th><th>Notes</th></tr>
+    <tr><td><code>--disaggregation-mode</code></td><td><code>null</code></td><td><code>prefill</code> or <code>decode</code></td></tr>
+    <tr><td><code>--disaggregation-transfer-backend</code></td><td><code>mooncake</code></td><td>also <code>nixl</code>, <code>mori</code>, <code>ascend</code>, <code>mooncake_tcp</code>, <code>fake</code> (no-op, for testing)</td></tr>
+    <tr><td><code>--disaggregation-bootstrap-port</code></td><td>8998</td><td>On the prefill server; the router needs it</td></tr>
+    <tr><td><code>--disaggregation-ib-device</code></td><td>auto</td><td>e.g. <code>mlx5_0</code>, or a per-GPU JSON map</td></tr>
+    <tr><td><code>--disaggregation-decode-enable-radix-cache</code></td><td>off</td><td>Decode keeps a prefix cache and asks prefill to send only the uncached tail</td></tr>
+    <tr><td><code>--num-reserved-decode-tokens</code></td><td>512</td><td>Headroom decode reserves per admitted request before it accepts more</td></tr>
+    <tr><td><code>--disaggregation-decode-retraction-backup</code></td><td>inferred</td><td>Where decode parks KV when it must retract: <code>cpu_tensor</code>, <code>host_pool</code>, <code>none</code></td></tr>
+  </table></div>
+  <figure class="code">
+<pre><code><span class="c"># single node, 2 GPUs, for learning (use the fake backend if you have no RDMA NIC)</span>
+python -m sglang.launch_server --model-path $MODEL --disaggregation-mode prefill \
+  --port 30000 --base-gpu-id 0 --disaggregation-transfer-backend fake
+python -m sglang.launch_server --model-path $MODEL --disaggregation-mode decode \
+  --port 30001 --base-gpu-id 1 --disaggregation-transfer-backend fake
+python -m sglang_router.launch_router --pd-disaggregation \
+  --prefill http://127.0.0.1:30000 8998 --decode http://127.0.0.1:30001 --port 8000</code></pre>
+    <figcaption><span>Router syntax from the DeepSeek-V3.2 cookbook page (<code>--prefill URL BOOTSTRAP_PORT</code>). With <code>fake</code> no KV moves, so outputs are garbage, but you can trace the control flow. Use <code>mooncake</code> or <code>nixl</code> for real runs.</span></figcaption>
+  </figure>
+  <details class="check"><summary>Why does decode pre-allocate KV before prefill even starts computing?</summary><div class="a"><p>RDMA is a one-sided write into a known address. Prefill can only send a chunk once it knows the destination slots. Pre-allocating early also gives backpressure: if decode is full, the request waits in decode's PreallocQueue, and prefill's bootstrap never completes. So prefill does not waste compute on KV that has nowhere to go. The <code>--disaggregation-decode-allocation-policy prefill_complete</code> option flips this to reserve later, trading backpressure for decode memory efficiency.</p></div></details>
+  <label class="mark"><input type="checkbox" data-sec="pd"> Mark chapter as read</label>
+</section>
+
+<!-- 07 -->
+<section class="ch" id="decoding">
+  <div class="chhead"><span class="chnum">07</span><h2>Sampling and speculative decoding</h2></div>
+  <p class="why">The model produces logits. Everything between logits and the next token id is where decoding-side research plugs in: sampling, constraints, speculation, and entropy.</p>
+  <h3>The sampling path</h3>
+  <p><a class="src" data-p="srt/model_executor/model_runner.py" data-l="2069">ModelRunner.sample</a> first applies logit bias and grammar masks (<code>sampling_info.apply_logits_bias</code>, penalties). Then it calls <a class="src" data-p="srt/layers/sampler.py" data-l="116">Sampler.forward</a>:</p>
+  <ol class="steps">
+    <li>All requests greedy? Take <code>torch.argmax(logits, -1)</code> and stop.</li>
+    <li>Otherwise, divide by per-request <code>temperatures</code>, softmax into <code>probs</code>.</li>
+    <li>Apply top-k / top-p / min-p and sample. Fused FlashInfer kernels are used where possible, with <code>top_k_top_p_min_p_sampling_from_probs_torch</code> as the reference.</li>
+    <li>If logprobs were requested, compute them from the same probs and store them on <code>logits_output</code>.</li>
+  </ol>
+  <p>All per-request knobs are packed into one GPU-side struct, <code>SamplingBatchInfo</code> (<code>sampling/sampling_batch_info.py</code>), so the whole batch samples in one kernel even when every request has different settings.</p>
+
+  <h3>Speculative decoding, EAGLE style</h3>
+  <p>Decode is bandwidth-bound: reading the weights once costs about the same whether you verify 1 token or 8. So a small draft model guesses several tokens, and the big target model checks them all in one forward. <a class="src" data-p="srt/speculative/eagle_worker_v2.py" data-l="1350">EAGLEWorkerV2.forward_batch_generation</a> has three phases per decode step:</p>
+  <div class="tbl"><table>
+    <tr><th>Phase</th><th>Model</th><th>What happens</th></tr>
+    <tr><td><code>draft</code></td><td>draft</td><td><code>speculative_num_steps</code> autoregressive steps, keeping top <code>speculative_eagle_topk</code> per step. The result is a token tree of <code>speculative_num_draft_tokens</code> nodes.</td></tr>
+    <tr><td><code>verify</code></td><td>target</td><td>One <code>TARGET_VERIFY</code> forward over all tree nodes with a tree attention mask. Greedy: <a class="src" data-p="srt/speculative/eagle_utils.py" data-l="384">verify_tree_greedy</a> keeps the longest path where draft equals target argmax. Sampling: <code>tree_speculative_sampling_target_only</code>.</td></tr>
+    <tr><td><code>draft_extend</code></td><td>draft</td><td>The draft model consumes the accepted tokens and the target's hidden states, ready for the next round.</td></tr>
+  </table></div>
+  <p>Rejected draft tokens' KV slots are freed; accepted ones are moved into place (<code>move_accept_tokens_to_target_kvcache</code>). The key metric is <b>accept length</b>, the average tokens gained per verify, shown as <code>accept len</code> in the server log.</p>
+  <p>Two existing knobs are relevant if you think about confidence-driven decoding:</p>
+  <ul>
+    <li><code>--speculative-accept-threshold-single</code> and <code>--speculative-accept-threshold-acc</code> (both default 1.0) relax acceptance. A draft token is accepted if its target probability exceeds a threshold, or its acceptance probability is boosted to <code>min(1, p / threshold_acc)</code>. This trades exactness for speed.</li>
+    <li><a class="src" data-p="srt/speculative/adaptive_spec_params.py" data-l="27">adaptive_spec_params.py</a> changes <code>speculative_num_steps</code> at runtime from observed accept lengths and batch size. For example, at batch size 1 it picks from steps [1, 3, 5, 7]; at 64 it uses 0. It is a feedback controller over a crude confidence signal.</li>
+  </ul>
+  <label class="mark"><input type="checkbox" data-sec="decoding"> Mark chapter as read</label>
+</section>
+
+<!-- 08 -->
+<section class="ch" id="entropy">
+  <div class="chhead"><span class="chnum">08</span><h2>Entropy in the decoder</h2></div>
+  <p class="why">Entropy of the next-token distribution, <code>H = −Σ p·log p</code>, measures how unsure the model is. Low entropy means one token dominates: easy to draft, easy to accept, safe to skip work. High entropy means the opposite.</p>
+
+  <div class="inst" id="entsim">
+    <div class="inst-head"><span class="inst-title">Next token after "The capital of France is"</span><span class="inst-tag">Try it · illustrative logits</span></div>
+    <div class="ent-grid">
+      <div class="ctl">
+        <label for="en-t"><span>temperature <b id="en-tv">1.00</b></span><input type="range" id="en-t" min="0.05" max="2" step="0.05" value="1"></label>
+        <label for="en-k"><span>top_k <b id="en-kv">10</b></span><input type="range" id="en-k" min="1" max="10" step="1" value="10"></label>
+        <label for="en-p"><span>top_p <b id="en-pv">1.00</b></span><input type="range" id="en-p" min="0.05" max="1" step="0.05" value="1"></label>
+        <div class="readout">
+          <div><small>H full</small><b id="en-h">–</b></div>
+          <div><small>H kept</small><b id="en-hk">–</b></div>
+          <div><small>kept</small><b id="en-n">–</b></div>
+        </div>
+        <p class="where">Entropy in bits. Order matches SGLang: temperature, softmax, then top-k / top-p truncation and renormalization. "H kept" is the entropy of the distribution actually sampled from.</p>
+      </div>
+      <div class="bars" id="en-bars"></div>
+    </div>
+  </div>
+
+  <h3>What already exists in the code</h3>
+  <h4>1. Entropy-bounded parallel decoding (diffusion LLMs)</h4>
+  <p>SGLang serves diffusion LLMs (<code>srt/dllm/</code>). These denoise a whole block of tokens at once. In <code>gemma4_renoise.py</code>, each step computes the per-position entropy, sorts positions from most to least certain, and commits positions while their cumulative entropy stays under <code>entropy_bound</code> (default 0.1). The rest get re-noised for another pass. A block stops early when its mean entropy drops below <code>confidence_threshold</code>.</p>
+  <figure class="code">
+<pre><code>sorted_entropy, indices = torch.sort(token_entropies, dim=-1)
+cumulative_entropy = torch.cumsum(sorted_entropy, dim=-1)
+sorted_selected = cumulative_entropy - sorted_entropy &lt;= self.entropy_bound
+selected = torch.zeros_like(sorted_selected).scatter(-1, indices, sorted_selected)
+confident = token_entropies.mean(dim=-1) &lt; self.confidence_threshold</code></pre>
+    <figcaption><span>The cleanest entropy-driven decoding loop in the repo</span><a class="src" data-p="srt/dllm/algorithm/gemma4_renoise.py" data-l="405">gemma4_renoise.py:405</a></figcaption>
+  </figure>
+  <h4>2. A <code>return_entropy</code> field that is not wired up</h4>
+  <p><code>GenerateReqInput</code> has <code>return_entropy: bool = False</code> (<a class="src" data-p="srt/managers/io_struct.py" data-l="335">io_struct.py:335</a>), and the output structs carry <code>output_token_entropy_val</code>. But the scheduler's output streamer currently fills it with <code>None</code> (<a class="src" data-p="srt/managers/scheduler_components/output_streamer.py" data-l="756">output_streamer.py:756</a>). The plumbing from API to detokenizer exists; the computation in the sampler does not. Implementing it is a contained first project that touches sampler → batch result → streamer.</p>
+  <h4>3. Confidence-ordered drafting (DSPARK)</h4>
+  <p>The DSPARK speculative algorithm (<code>speculative/dspark_components/</code>) has a draft model with a confidence head (<code>dspark_draft.py</code>). It uses the confidence to decide how many draft tokens per request are worth verifying. This is the closest existing relative of an "entropy-adaptive speculation" design.</p>
+
+  <h3>Where an entropy signal could plug in</h3>
+  <p>These are design directions, not existing features. Each lists the hook point.</p>
+  <div class="tbl"><table>
+    <tr><th>Idea</th><th>Signal</th><th>Hook point</th></tr>
+    <tr><td>Per-request adaptive draft length</td><td>Draft-model entropy at each draft step: stop drafting a branch when H spikes</td><td><code>EagleDraftWorker.draft_forward</code> (<code>eagle_worker_v2.py</code>); <code>adaptive_spec_params.py</code> is batch-level today</td></tr>
+    <tr><td>Entropy-gated verification</td><td>Target entropy at verified positions, to relax thresholds where the model is confident</td><td><code>verify</code> in <code>eagle_utils.py</code>, around the <code>threshold_single</code>/<code>threshold_acc</code> call</td></tr>
+    <tr><td>Return entropy to clients</td><td>H of the final sampling distribution</td><td><code>Sampler.forward</code> → <code>logits_output</code> → <code>batch_result_processor.py</code> → <code>output_streamer.py</code></td></tr>
+    <tr><td>Uncertainty-aware scheduling</td><td>Running mean H per request, to predict output length or early stop</td><td><code>SchedulePolicy</code> sort keys; <code>new_token_ratio</code> estimation</td></tr>
+    <tr><td>Entropy-aware KV eviction</td><td>Keep prefixes whose continuations were high-entropy (likely to be re-sampled)</td><td>A new <code>EvictionStrategy.get_priority</code> in <code>evict_policy.py</code></td></tr>
+  </table></div>
+  <div class="note"><b>Cost to watch.</b> Full-vocab entropy is one extra reduction over <code>[batch, vocab]</code> (vocab is often 150k+). It is cheap next to the forward, but it must stay on GPU and inside CUDA graphs. A <code>.item()</code> per step would add a sync and break overlap scheduling.</div>
+  <label class="mark"><input type="checkbox" data-sec="entropy"> Mark chapter as read</label>
+</section>
+
+<!-- 09 -->
+<section class="ch" id="hack">
+  <div class="chhead"><span class="chnum">09</span><h2>Where to hack</h2></div>
+  <p class="why">A quick lookup from "I want to change X" to the file you open first.</p>
+  <div class="tbl"><table>
+    <tr><th>I want to…</th><th>Start in</th></tr>
+    <tr><td>Change which requests run first</td><td><code>managers/schedule_policy.py</code>: add a policy enum and a <code>_sort_by_*</code></td></tr>
+    <tr><td>Change admission / memory budgeting</td><td><code>PrefillAdder</code> in <code>schedule_policy.py</code>; <code>mem_cache/prefill_budget.py</code></td></tr>
+    <tr><td>Try a new eviction rule</td><td><code>mem_cache/evict_policy.py</code> (one method)</td></tr>
+    <tr><td>Change KV layout or quantization</td><td><code>mem_cache/memory_pool.py</code> (a new <code>KVCache</code> subclass), <code>mem_cache/kv_cache_dtype.py</code></td></tr>
+    <tr><td>Add an L3 storage backend</td><td>Subclass <code>HiCacheStorage</code> under <code>mem_cache/storage/&lt;name&gt;/</code>; <code>--hicache-storage-backend dynamic</code> loads it without editing core code</td></tr>
+    <tr><td>Change PD transfer</td><td><code>disaggregation/base/conn.py</code> (interfaces), <code>common/conn.py</code> (shared logic), <code>mooncake/conn.py</code> (reference backend)</td></tr>
+    <tr><td>Change prefill or decode queue logic</td><td><code>disaggregation/prefill.py</code>, <code>disaggregation/decode.py</code></td></tr>
+    <tr><td>Change sampling</td><td><code>layers/sampler.py</code>; per-request custom logits via <code>sampling/custom_logit_processor.py</code> (no core change needed)</td></tr>
+    <tr><td>New speculative algorithm</td><td><code>speculative/spec_registry.py</code>, <code>base_spec_worker.py</code>; copy <code>ngram_worker.py</code> as the simplest example</td></tr>
+  </table></div>
+  <div class="note"><b>Repo rules.</b> The repo's <code>.claude/rules/</code> says to read the <code>speculative-naming</code> skill before editing <code>speculative/</code>, and <code>large-class-style</code> before touching <code>Scheduler</code>, <code>TokenizerManager</code> or <code>ModelRunner.__init__</code>. <code>model_runner.py</code> is treated as a frozen core file. Accuracy checks should use <code>sgl-eval</code>.</div>
+  <label class="mark"><input type="checkbox" data-sec="hack"> Mark chapter as read</label>
+</section>
+
+<!-- 10 -->
+<section class="ch" id="lab">
+  <div class="chhead"><span class="chnum">10</span><h2>Exercises for your team's GPU</h2></div>
+  <p class="why">Run each one with the 3B model you already have. Every exercise maps to a chapter, and the expected effect is stated so you can tell if your mental model is right.</p>
+  <div class="tbl"><table>
+    <tr><th>#</th><th>Do this</th><th>Expect</th><th>Ch.</th></tr>
+    <tr><td>1</td><td>Start the server and find <code>max_total_num_tokens</code> in the log. Recompute it from the bytes-per-token formula.</td><td>Within a few percent</td><td>03</td></tr>
+    <tr><td>2</td><td>Run <code>python -m sglang.bench_serving --backend sglang --dataset-name generated-shared-prefix</code> twice: once normally, once with the server started with <code>--disable-radix-cache</code>.</td><td>Large TTFT gap; <code>#cached-token</code> in the log drops to 0</td><td>04</td></tr>
+    <tr><td>3</td><td>Same benchmark with <code>--schedule-policy fcfs</code> vs the default <code>lpm</code>.</td><td>lpm gives higher cache hit rate under load</td><td>02</td></tr>
+    <tr><td>4</td><td>Send one 30k-token prompt during a decode-heavy load, with <code>--chunked-prefill-size 2048</code> vs <code>-1</code>.</td><td>Without chunking, inter-token latency spikes for everyone</td><td>02</td></tr>
+    <tr><td>5</td><td>Compare <code>--disable-overlap-schedule</code> with the default on a small-batch decode benchmark.</td><td>Overlap wins most at small batch, where CPU time is a larger fraction</td><td>02</td></tr>
+    <tr><td>6</td><td>Start two servers in PD mode with <code>--disaggregation-transfer-backend fake</code> plus the router (chapter 06). Add <code>--log-level debug</code> and follow one <code>bootstrap_room</code> through both logs.</td><td>You see Bootstrapping → Success on both sides</td><td>06</td></tr>
+    <tr><td>7</td><td>Add a temporary print of entropy in <code>Sampler.forward</code> (compute from <code>probs</code>, keep it on GPU, print every 100 steps). Compare a factual prompt with a creative one.</td><td>Factual prompts: mostly below 1 bit</td><td>08</td></tr>
+  </table></div>
+  <p>Useful endpoints while experimenting: <code>POST /flush_cache</code> empties the radix tree between runs, and <code>GET /server_info</code> dumps the resolved server args.</p>
+  <label class="mark"><input type="checkbox" data-sec="lab"> Mark chapter as read</label>
+</section>
+
+<!-- 11 -->
+<section class="ch" id="glossary">
+  <div class="chhead"><span class="chnum">11</span><h2>Glossary</h2></div>
+  <div class="tbl"><table>
+    <tr><th>Term</th><th>Meaning here</th></tr>
+    <tr><td>extend</td><td>Prefill of the uncached part of a sequence</td></tr>
+    <tr><td>prefix_len / extend_input_len</td><td>Tokens served from cache / tokens computed this forward</td></tr>
+    <tr><td>req_pool_idx</td><td>A request's row in <code>req_to_token</code></td></tr>
+    <tr><td>out_cache_loc</td><td>KV slots allocated for this forward's new tokens</td></tr>
+    <tr><td>page_size</td><td>Allocation granularity in tokens; radix keys are truncated to page multiples</td></tr>
+    <tr><td>lock_ref</td><td>Count of running requests that depend on a tree node</td></tr>
+    <tr><td>retract</td><td>Kick a decoding request back to the queue to free KV</td></tr>
+    <tr><td>new_token_ratio</td><td>Admission's guess at what fraction of max_new_tokens will be used</td></tr>
+    <tr><td>chunked_req</td><td>The one request whose prefill is split across iterations</td></tr>
+    <tr><td>bootstrap_room</td><td>Random id pairing a prefill sender with a decode receiver</td></tr>
+    <tr><td>PREBUILT</td><td>Decode-side batch whose KV arrived by transfer</td></tr>
+    <tr><td>accept length</td><td>Average tokens gained per speculative verify step</td></tr>
+    <tr><td>TP / DP attention / PP</td><td>Tensor parallel; data-parallel attention with shared MoE; pipeline parallel</td></tr>
+    <tr><td>L1 / L2 / L3</td><td>GPU / host / storage tiers of HiCache</td></tr>
+  </table></div>
+  <h3>Papers to pair with the code</h3>
+  <ul>
+    <li>SGLang: Efficient Execution of Structured Language Model Programs (RadixAttention), Zheng et al., 2024</li>
+    <li>DistServe (Zhong et al., 2024) and Splitwise (Patel et al., 2024): the case for PD disaggregation</li>
+    <li>Mooncake: a KVCache-centric architecture for serving (Qin et al., 2024)</li>
+    <li>EAGLE, EAGLE-2, EAGLE-3 (Li et al., 2024–2025): feature-level drafting and dynamic draft trees</li>
+  </ul>
+  <label class="mark"><input type="checkbox" data-sec="glossary"> Mark chapter as read</label>
+  <p class="foot">Built from a read of sgl-project/sglang at commit 3420baea8c7a4812b6a35aebd33d9946fad475f7. Code excerpts are abridged and remain under the project's Apache-2.0 license. The illustrative numbers (logits, the 3B model's shape) are examples, not measurements.</p>
+</section>
+</main>
+</div>
+
+<script>
+(function(){
+  const SHA="3420baea8c7a4812b6a35aebd33d9946fad475f7";
+  document.querySelectorAll("a.src").forEach(a=>{
+    let p=a.dataset.p; const l=a.dataset.l;
+    let path = p.startsWith("../../") ? p.slice(6) : "python/sglang/"+p;
+    a.href="https://github.com/sgl-project/sglang/blob/"+SHA+"/"+path+(l?"#L"+l:"");
+    a.target="_blank"; a.rel="noopener";
+  });
+
+  /* ---------- read marks ---------- */
+  const KEY="sglang-guide-read";
+  let read={}; try{read=JSON.parse(localStorage.getItem(KEY)||"{}")}catch(e){}
+  const tocLinks=[...document.querySelectorAll("#toc a")];
+  function paintRead(){tocLinks.forEach(a=>a.classList.toggle("read",!!read[a.getAttribute("href").slice(1)]))}
+  document.querySelectorAll(".mark input").forEach(cb=>{
+    cb.checked=!!read[cb.dataset.sec];
+    cb.addEventListener("change",()=>{read[cb.dataset.sec]=cb.checked;try{localStorage.setItem(KEY,JSON.stringify(read))}catch(e){}paintRead()});
+  });
+  paintRead();
+  const secs=[...document.querySelectorAll("section.ch")];
+  function onScroll(){
+    let cur=secs[0].id; const y=window.scrollY+window.innerHeight*0.25;
+    secs.forEach(s=>{if(s.offsetTop<=y)cur=s.id});
+    tocLinks.forEach(a=>{const on=a.getAttribute("href")==="#"+cur;a.classList.toggle("cur",on);if(on&&window.innerWidth<=900){a.scrollIntoView({block:"nearest",inline:"nearest"})}});
+  }
+  let tick=false; window.addEventListener("scroll",()=>{if(!tick){tick=true;requestAnimationFrame(()=>{onScroll();tick=false})}},{passive:true}); onScroll();
+
+  /* ---------- generic stepper ---------- */
+  function stepper(prefix, steps, allIds){
+    const dots=document.getElementById(prefix+"-dots"), body=document.getElementById(prefix+"-body");
+    const prev=document.getElementById(prefix+"-prev"), next=document.getElementById(prefix+"-next");
+    let i=0;
+    steps.forEach((s,k)=>{const b=document.createElement("button");b.textContent=k+1;b.setAttribute("aria-label","Step "+(k+1));b.onclick=()=>go(k);dots.appendChild(b)});
+    function go(k){
+      i=k; const s=steps[i];
+      allIds.forEach(id=>{const el=document.getElementById(id);if(el)el.classList.remove("on")});
+      s.on.forEach(id=>{const el=document.getElementById(id);if(el)el.classList.add("on")});
+      body.innerHTML="<h4>"+(i+1)+". "+s.t+"</h4>"+s.b+(s.w?'<div class="where">'+s.w+"</div>":"");
+      [...dots.children].forEach((d,k2)=>d.classList.toggle("cur",k2===i));
+      prev.disabled=i===0; next.disabled=i===steps.length-1;
+    }
+    prev.onclick=()=>go(Math.max(0,i-1)); next.onclick=()=>go(Math.min(steps.length-1,i+1));
+    go(0);
+  }
+
+  stepper("j",[
+    {t:"HTTP request arrives",on:["j-client","j-http","e1"],b:"<p>A FastAPI route (<code>/generate</code> or <code>/v1/chat/completions</code>) parses the body into a <code>GenerateReqInput</code>. The OpenAI layer (<code>entrypoints/openai/serving_chat.py</code>) applies the chat template first.</p>",w:"entrypoints/http_server.py · entrypoints/openai/"},
+    {t:"Tokenize and hand off",on:["j-http","j-tok","e2","e3"],b:"<p><code>TokenizerManager.generate_request</code> tokenizes, assigns a request id (<code>rid</code>), registers a waiter for the output, and pushes a <code>TokenizedGenerateReqInput</code> over ZMQ (<code>send_to_scheduler</code>).</p>",w:"managers/tokenizer_manager.py:909"},
+    {t:"Scheduler queues it",on:["j-sched","e3"],b:"<p>Next loop iteration, <code>ingest_requests()</code> receives it. <code>handle_generate_request</code> builds a <code>Req</code> and appends it to <code>waiting_queue</code>. With TP &gt; 1, rank 0 receives and broadcasts to the other ranks so every scheduler makes identical decisions.</p>",w:"managers/scheduler.py: ingest_requests → handle_generate_request"},
+    {t:"Batch it",on:["j-sched","j-kv"],b:"<p><code>get_next_batch_to_run</code> sorts the queue, matches each request's prefix in the radix tree, checks memory budgets, and builds a <code>ScheduleBatch</code> in <code>EXTEND</code> mode. KV slots are allocated for the uncached tokens.</p>",w:"managers/scheduler.py:3806 · managers/schedule_policy.py"},
+    {t:"Run the model",on:["j-sched","j-worker","j-kv","e4","e5"],b:"<p><code>run_batch</code> → <code>TpModelWorker.forward_batch_generation</code> → <code>ModelRunner.forward</code>. Decode batches replay a captured CUDA graph; prefill runs eagerly or with a piecewise graph. Attention layers write K/V into the pool and read context through the page table. Logits go to the sampler.</p>",w:"model_executor/model_runner.py:1940"},
+    {t:"Process the result",on:["j-sched","j-detok","e6"],b:"<p><code>process_batch_result</code> appends the token to <code>req.output_ids</code> and checks stop conditions. Finished requests release KV into the radix tree. New token ids are streamed to the detokenizer. Unfinished requests join <code>running_batch</code> for decode steps.</p>",w:"managers/scheduler_components/batch_result_processor.py"},
+    {t:"Back to text, back to client",on:["j-detok","j-tok","j-client","e7","e8"],b:"<p><code>DetokenizerManager</code> does incremental detokenization (it handles tokens that only form valid UTF-8 together) and sends text to <code>TokenizerManager.handle_loop</code>, which wakes the waiting HTTP handler. Streaming responses go out chunk by chunk.</p>",w:"managers/detokenizer_manager.py:103"}
+  ],["j-client","j-http","j-tok","j-sched","j-worker","j-kv","j-detok","e1","e2","e3","e4","e5","e6","e7","e8"]);
+
+  stepper("p",[
+    {t:"Router pairs a prefill and a decode server",on:["p-client","p-router","pe-c","pe-rp","pe-rd"],b:"<p>The router picks one prefill and one decode worker (cache-aware or load-based in the Rust gateway; random in MiniLB). It adds <code>bootstrap_host</code>, <code>bootstrap_port</code> and a random <code>bootstrap_room</code>, then POSTs the same request to both concurrently.</p>",w:"sgl-model-gateway/ · mini_lb.py:150"},
+    {t:"Decode: create receiver, ask where prefill lives",on:["p-dpre","p-bs","pe-hs"],b:"<p>Decode tokenizes and puts a <code>DecodeRequest</code> into <code>DecodePreallocQueue</code> with a <code>KVReceiver</code>. The receiver asks prefill's bootstrap server (<code>/route</code>) for the addresses of the prefill ranks that will send to it. In TP/DP setups there can be several.</p>",w:"disaggregation/decode.py:376 · common/conn.py:2631"},
+    {t:"Decode: pre-allocate KV and publish destinations",on:["p-dpre","p-dkv","pe-meta"],b:"<p>Once decode has room (keeping <code>num_reserved_decode_tokens</code> headroom), it allocates a <code>req_to_token</code> row and KV slots for the whole prompt. It sends the destination slot indices plus a metadata-buffer index to prefill over ZMQ. The request moves on to <code>DecodeTransferQueue</code>.</p>",w:"DecodePreallocQueue.pop_preallocated → _pre_alloc"},
+    {t:"Prefill: bootstrap completes",on:["p-pboot","p-pwait","pe-q"],b:"<p>On prefill, the request waited in <code>PrefillBootstrapQueue</code> with a <code>KVSender</code>. When the sender's poll moves from <code>Bootstrapping</code> to <code>WaitingForInput</code> (it knows the destination), <code>pop_bootstrapped()</code> moves it to the normal <code>waiting_queue</code>.</p>",w:"disaggregation/prefill.py:162 · event_loop_normal_disagg_prefill"},
+    {t:"Prefill: compute and stream KV chunk by chunk",on:["p-pwait","p-pfwd","p-dkv","pe-f","pe-rdma"],b:"<p>The ordinary <code>PrefillAdder</code> schedules it (radix cache works here as usual). After each chunk, <code>send_kv_chunk</code> hands page-aligned slot ranges to the transfer engine's worker threads, which RDMA-write them into decode's slots. The last chunk also writes the metadata buffer, including the first sampled token.</p>",w:"prefill.py:1473 _send_kv_chunk · mooncake/conn.py"},
+    {t:"Prefill: wait for transfer, then free",on:["p-pinf","pe-inf"],b:"<p>The request sits in <code>disagg_prefill_inflight_queue</code>. <code>process_disagg_prefill_inflight_queue</code> polls each sender (all-reduced across TP ranks). On <code>Success</code> it releases the KV, keeping a copy in its radix cache for future prefix hits, and finishes the prefill-side HTTP request.</p>",w:"prefill.py:1108"},
+    {t:"Decode: transfer done → PREBUILT batch",on:["p-dxfer","p-dwait","pe-dx","pe-dw"],b:"<p><code>process_decode_queue</code> calls <code>pop_transferred()</code>. Requests whose receiver reports <code>Success</code> get their first output token from the metadata buffer and go to <code>waiting_queue</code>. <code>_get_new_prebuilt_batch</code> wraps them in a batch that runs no prompt forward.</p>",w:"decode.py:3329 · decode.py:3246"},
+    {t:"Decode: run decode steps and stream",on:["p-drun","p-router","p-client","pe-dr","pe-out"],b:"<p>The prebuilt batch merges into <code>running_batch</code>. From here it is the ordinary decode loop from chapter 02, including retraction when memory runs short (with a host backup per <code>--disaggregation-decode-retraction-backup</code>). Tokens stream back through the router.</p>",w:"event_loop_normal_disagg_decode · decode.py:3032"}
+  ],["p-client","p-router","p-pboot","p-pwait","p-pfwd","p-pinf","p-bs","p-dpre","p-dxfer","p-dwait","p-drun","p-dkv","pe-c","pe-rp","pe-rd","pe-hs","pe-meta","pe-q","pe-f","pe-rdma","pe-inf","pe-dx","pe-dw","pe-dr","pe-out"]);
+
+  /* ---------- radix simulator ---------- */
+  const CAP=40; let clock=0, nid=0, reqs=[], reqId=0;
+  function Node(key,parent){return{id:++nid,key:key,parent:parent,children:new Map(),lock:0,last:clock}}
+  let root;
+  const $=id=>document.getElementById(id);
+  const logEl=$("rx-log");
+  function log(msg){const d=document.createElement("div");d.innerHTML=msg;logEl.prepend(d)}
+  function treeTokens(n){let s=n===root?0:n.key.length;n.children.forEach(c=>s+=treeTokens(c));return s}
+  function lockedTokens(n){let s=(n!==root&&n.lock>0)?n.key.length:0;n.children.forEach(c=>s+=lockedTokens(c));return s}
+  function privTokens(){return reqs.reduce((a,r)=>a+r.priv,0)}
+  function used(){return treeTokens(root)+privTokens()}
+  function split(child,len){
+    const nn=Node(child.key.slice(0,len),child.parent);nn.lock=child.lock;nn.last=child.last;
+    child.parent.children.set(child.key[0],nn);
+    child.key=child.key.slice(len);child.parent=nn;nn.children.set(child.key[0],child);
+    return nn;
+  }
+  function match(tokens){
+    let node=root,i=0,path=[];clock++;root.last=clock;
+    while(i<tokens.length&&node.children.has(tokens[i])){
+      const c=node.children.get(tokens[i]);c.last=clock;
+      let k=0;while(k<c.key.length&&i+k<tokens.length&&c.key[k]===tokens[i+k])k++;
+      if(k<c.key.length){const nn=split(c,k);path.push(nn);node=nn;i+=k;break}
+      path.push(c);node=c;i+=k;
+    }
+    return{len:i,node:node,path:path};
+  }
+  function lockPath(node,d){while(node&&node!==root){node.lock+=d;node=node.parent}}
+  function leaves(n,out){if(n!==root&&n.children.size===0&&n.lock===0)out.push(n);n.children.forEach(c=>leaves(c,out));return out}
+  function evict(need){
+    let freed=0;
+    while(freed<need){
+      const L=leaves(root,[]);if(!L.length)break;
+      L.sort((a,b)=>a.last-b.last);const x=L[0];
+      x.parent.children.delete(x.key[0]);freed+=x.key.length;
+      log('evict LRU leaf <b>"'+x.key.join(" ")+'"</b> ('+x.key.length+" slots freed)");
+    }
+    return freed;
+  }
+  let hl={hit:new Set(),fresh:new Set()};
+  function insert(tokens){
+    let node=root,i=0;clock++;const fresh=new Set();
+    while(i<tokens.length&&node.children.has(tokens[i])){
+      const c=node.children.get(tokens[i]);c.last=clock;
+      let k=0;while(k<c.key.length&&i+k<tokens.length&&c.key[k]===tokens[i+k])k++;
+      if(k<c.key.length){node=split(c,k);i+=k;break}
+      node=c;i+=k;
+    }
+    let dup=i;
+    if(i<tokens.length){const nn=Node(tokens.slice(i),node);node.children.set(tokens[i],nn);fresh.add(nn.id)}
+    return{dup:dup,fresh:fresh};
+  }
+  function send(){
+    const toks=$("rx-input").value.trim().split(/\s+/).filter(Boolean);
+    if(!toks.length){log("enter at least one token");return}
+    const m=match(toks);
+    const need=toks.length-m.len;
+    lockPath(m.node,1);
+    let free=CAP-used();
+    if(need>free){
+      log("need "+need+" new slots, only "+free+" free → evicting");
+      evict(need-free);free=CAP-used();
+    }
+    if(need>free){
+      lockPath(m.node,-1);
+      log('<span style="color:var(--bad)">rejected</span>: '+need+" slots needed, "+free+" free, the rest is locked by running requests. In SGLang the request waits in waiting_queue, or decode retracts.");
+      hl={hit:new Set(),fresh:new Set()};render();return;
+    }
+    const r={id:++reqId,toks:toks,node:m.node,priv:need};reqs.push(r);
+    hl={hit:new Set(m.path.map(n=>n.id)),fresh:new Set()};
+    log("req"+r.id+": prefix hit <b>"+m.len+"</b>/"+toks.length+" tokens, compute "+need+" (extend_input_len)");
+    render();
+  }
+  function finishAll(){
+    if(!reqs.length){log("no running requests");return}
+    const fresh=new Set();
+    reqs.forEach(r=>{
+      const res=insert(r.toks);res.fresh.forEach(x=>fresh.add(x));
+      lockPath(r.node,-1);
+      log("req"+r.id+" finished: inserted into tree, unlocked"+(res.dup>0?" ("+res.dup+" tokens already in tree)":""));
+    });
+    reqs=[];hl={hit:new Set(),fresh:fresh};render();
+  }
+  function reset(){root=Node([],null);reqs=[];reqId=0;clock=0;hl={hit:new Set(),fresh:new Set()};logEl.innerHTML="";log("empty tree; pool capacity "+CAP+" slots");render()}
+  function nodeHtml(n){
+    let cls="node";if(hl.hit.has(n.id))cls+=" hit";if(hl.fresh.has(n.id))cls+=" new";if(n.lock>0)cls+=" locked";
+    let s='<li><span class="'+cls+'" data-lock="'+n.lock+'"><span>'+n.key.map(esc).join(" ")+'</span><span class="len">['+n.key.length+"]</span></span>";
+    if(n.children.size){s+="<ul>";n.children.forEach(c=>s+=nodeHtml(c));s+="</ul>"}
+    return s+"</li>";
+  }
+  function esc(t){return t.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+  function render(){
+    let h='<ul><li><span class="node"><span>root</span></span>';
+    if(root.children.size){h+="<ul>";root.children.forEach(c=>h+=nodeHtml(c));h+="</ul>"}
+    $("rx-tree").innerHTML=h+"</li></ul>";
+    const tt=treeTokens(root),lt=lockedTokens(root),pv=privTokens();
+    $("rx-stats").innerHTML="<span>in tree</span><b>"+tt+"</b><span>protected (locked)</span><b>"+lt+"</b><span>evictable</span><b>"+(tt-lt)+"</b><span>free slots</span><b>"+(CAP-tt-pv)+" / "+CAP+"</b>";
+    $("rx-m1").style.width=(lt/CAP*100)+"%";$("rx-m2").style.width=((tt-lt)/CAP*100)+"%";$("rx-m3").style.width=(pv/CAP*100)+"%";
+    const rr=$("rx-running");rr.innerHTML=reqs.length?reqs.map(r=>'<span class="chip">req'+r.id+" · "+r.toks.length+" tok</span>").join(""):'<span class="where">none</span>';
+  }
+  const presets=[
+    ["chat 1","SYS you are a helpful bot USER what is a KV cache"],
+    ["chat 2","SYS you are a helpful bot USER what is a radix tree"],
+    ["chat 3","SYS you are a helpful bot USER explain PD disaggregation please"],
+    ["other","SYS you are a pirate USER say hi"],
+    ["long doc","DOC alpha beta gamma delta epsilon zeta eta theta iota kappa lambda mu Q summarize"]
+  ];
+  presets.forEach(([l,v])=>{const b=document.createElement("button");b.textContent=l;b.onclick=()=>{$("rx-input").value=v};$("rx-presets").appendChild(b)});
+  $("rx-send").onclick=send;$("rx-finish").onclick=finishAll;
+  $("rx-evict").onclick=()=>{const f=evict(4);if(!f)log("nothing evictable (empty or all locked)");hl={hit:new Set(),fresh:new Set()};render()};
+  $("rx-reset").onclick=reset;
+  $("rx-input").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();send()}});
+  reset();
+  // seed a realistic starting state
+  $("rx-input").value=presets[0][1];send();finishAll();
+  $("rx-input").value=presets[1][1];send();
+  $("rx-input").value=presets[2][1];
+
+  /* ---------- entropy playground ---------- */
+  const V=[["Paris",9.1],["a",6.4],["the",6.0],["located",5.2],["Lyon",4.1],["known",3.8],["one",3.3],["not",2.9],["home",2.5],["Marseille",2.2]];
+  function upd(){
+    const T=+$("en-t").value,K=+$("en-k").value,P=+$("en-p").value;
+    $("en-tv").textContent=T.toFixed(2);$("en-kv").textContent=K;$("en-pv").textContent=P.toFixed(2);
+    const z=V.map(v=>v[1]/T),mx=Math.max(...z),e=z.map(x=>Math.exp(x-mx)),s=e.reduce((a,b)=>a+b,0),p=e.map(x=>x/s);
+    const H=a=>-a.reduce((acc,x)=>acc+(x>0?x*Math.log2(x):0),0);
+    const order=p.map((x,i)=>i).sort((a,b)=>p[b]-p[a]);
+    const keep=new Set();let cum=0;
+    for(let r=0;r<order.length;r++){if(r>=K)break;keep.add(order[r]);cum+=p[order[r]];if(cum>=P)break}
+    const ks=[...keep].reduce((a,i)=>a+p[i],0);
+    const pk=p.map((x,i)=>keep.has(i)?x/ks:0);
+    $("en-h").textContent=H(p).toFixed(2);$("en-hk").textContent=H(pk).toFixed(2);$("en-n").textContent=keep.size+"/"+V.length;
+    $("en-bars").innerHTML=V.map((v,i)=>{const val=keep.has(i)?pk[i]:p[i];return '<div class="bar'+(keep.has(i)?"":" cut")+'"><span class="tok">'+v[0]+'</span><span class="track"><span class="fill" style="display:block;width:'+(val*100).toFixed(1)+'%"></span></span><span class="pv">'+(val*100).toFixed(1)+"%</span></div>"}).join("");
+  }
+  ["en-t","en-k","en-p"].forEach(id=>$(id).addEventListener("input",upd));upd();
+})();
+</script>
